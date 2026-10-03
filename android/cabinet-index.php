@@ -867,7 +867,32 @@ const TABS = ['places','shelves','polki','containers','items','stats','shares'];
 const HAS_DATA = ['places','shelves','polki','containers','items'];
 
 function esc(s){ const d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function safeUrl(v){ const s=String(v||'').trim(); if(!s) return ''; if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(s) && !/^https?:\/\//i.test(s)) return ''; return s.replace(/[<>"'\x00-\x1f]/g,''); }
+// Безопасный адрес для src/href.
+//
+//    Пропускаем только путь от корня сайта и наш собственный http(s).
+//    Отдельная оговорка про «//host»: это протокол-относительный адрес, и
+//    браузер грузит картинку с чужого хоста. Скрипт не выполнится, но человек
+//    раскрывает свой IP и сам факт просмотра склада, а Referer уезжает на
+//    посторонний домен. Прежняя проверка его пропускала: «//» не содержит схемы,
+//    а проверка считала «нет схемы — значит свой путь».
+//
+//    Управляющие символы убираем ДО разбора: иначе «java\nscript:» станет
+//    «javascript:» уже после того, как регулярка схемы отработала.
+function safeUrl(v){
+  const s=String(v||'').trim();
+  if(!s) return '';
+  const clean=s.replace(/[\x00-\x1f]/g,'');
+  if(!clean) return '';
+  if(clean.startsWith('//')) return '';
+  if(clean.startsWith('/')) return clean.replace(/[<>"]/g,'');
+  if(/^https?:\/\//i.test(clean)){
+    let u;
+    try{ u=new URL(clean); }catch(e){ return ''; }
+    if(u.host.toLowerCase()!==window.location.host.toLowerCase()) return '';
+    return clean.replace(/[<>"]/g,'');
+  }
+  return '';
+}
 function fmtDate(v){ if(!v) return '—'; const d=new Date(Number(v)); return isNaN(d)?'—':d.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
 function nameOf(table,id){ if(id==null||id==='') return ''; const r=DB[table].find(x=>x.id===Number(id)); return r?r.name:''; }
 function setStatus(msg,isErr){ const el=document.getElementById('status'); el.textContent=msg||''; el.className='status'+(isErr?' err':msg?' ok':''); }

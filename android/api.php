@@ -523,11 +523,33 @@ function normalize(string $table, array $data, array $fields): array {
         if (in_array($f, ['latitude','longitude'])) {
             $v = ($v === null || $v === '') ? null : (float)$v;
         }
-        // photoPath — только безопасные схемы/относительные пути (блокируем javascript: и т.п.)
+        // photoPath — только http(s) на наш домен или путь от корня сайта.
+//
+//        Прежняя проверка ловила «javascript:», «data:» и прочие схемы, но
+//        пропускала «//evil.example/photo.png» — протокол-относительный адрес.
+//        Браузер честно грузит картинку с чужого хоста: скрипт не выполняется,
+//        но человек раскрывает свой IP и сам факт просмотра склада, а Referer
+//        уезжает на посторонний домен. Поэтому схему проверяем строго: путь
+//        начинается с «/» (и не с «//») либо это наш собственный http(s).
         if ($f === 'photoPath' && $v !== null) {
             $v = trim((string)$v);
-            if ($v === '') $v = null;
-            elseif (preg_match('/^\s*(javascript|vbscript|data|file):/i', $v) || strpbrk($v, "<>\x00\x0d\x0a") !== false) $v = null;
+            if ($v === '') {
+                $v = null;
+            } elseif (strpbrk($v, "<>\x00\x0d\x0a") !== false) {
+                $v = null;
+            } elseif (str_starts_with($v, '//')) {
+                $v = null;
+            } elseif (preg_match('#^https?://#i', $v)) {
+                // Ссылка должна вести на нас, а не на сторонний хост.
+                $host = strtolower((string)parse_url($v, PHP_URL_HOST));
+                $ourHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? 'kladovka.dr6ter.ru'));
+                $ourHost = explode(':', $ourHost)[0];
+                if ($host !== $ourHost) $v = null;
+            } elseif (!str_starts_with($v, '/')) {
+                // Относительный путь без ведущего слэша в photoPath не бывает:
+                // ссылки от upload_photo всегда абсолютные от корня сайта.
+                $v = null;
+            }
         }
         $out[$f] = $v;
     }
