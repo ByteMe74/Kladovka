@@ -11,6 +11,14 @@ dependencies {
     api("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(kotlin("test"))
+    // Настоящий HTTP-сервер в тестах. До сих пор ApiClient проверялся только на
+    // разборе текста ошибки: заголовки, коды ответов и JSON из живого ответа не
+    // трогал никто. Версия та же, что у okhttp, чтобы не тянуть вторую копию.
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    // Сертификаты для HTTPS-стенда. Отдельная зависимость, а не обход
+    // требования https в ApiClient: иначе тест проверял бы не тот код, который
+    // работает в бою, и требование https осталось бы непроверенным.
+    testImplementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
 }
 
 tasks.test {
