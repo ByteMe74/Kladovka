@@ -33,25 +33,55 @@ function issueUserToken(array $cfg, int $userId): string {
 function checkAuth(array $cfg, ?string $token): bool {
     return userIdForToken($cfg, $token) !== null;
 }
-// Возвращает id пользователя по его токену (или null для админ-токена/неверного)
+/**
+ * id пользователя по его токену (null — админ-ключ тоже даёт 0, неверный токен null).
+ *
+ * Токен лежит в users.token, поэтому поиск — один запрос по индексу. Раньше
+ * здесь был перебор всех пользователей с пересчётом HMAC для каждого, и у
+ * перебора стоял LIMIT 1000: после тысячи пользователей токены переставали
+ * узнаваться молча, без всякой ошибки.
+ *
+ * Совместимость: у кого-то токен в колонке ещё не записан — он заходил до
+ * появления колонки. Для них остаётся перебор как запасной путь, и найденный
+ * токен тут же записывается, то есть перебор случается для каждого пользователя
+ * ровно один раз за всю жизнь аккаунта, а не на каждый запрос.
+ */
 function userIdForToken(array $cfg, ?string $token): ?int {
     if ($token === null || $token === '') return null;
     // API-ключ из конфига (заголовок X-Api-Key или Bearer) — права администратора
     if (hash_equals((string)($cfg['api_key'] ?? ''), $token)) return 0;
     if (hash_equals(issueToken($cfg), $token)) return 0; // 0 = админ
-    // Отозванные после выхода из аккаунта: токен статистичный, поэтому иначе он
-    // продолжал бы работать вечно. Выход обязан быть настоящим, иначе «вышел»
-    // означает «сессия в браузере стёрта, а доступ всё ещё выдан».
-    $revoked = revoked_user_ids($cfg);
+
     $pdo = db($cfg);
-    $stmt = $pdo->prepare('SELECT id FROM users LIMIT 1000');
+    $st = $pdo->prepare('SELECT id FROM users WHERE token = :t LIMIT 1');
+    $st->execute([':t' => $token]);
+    $id = $st->fetchColumn();
+    if ($id !== false) {
+        $id = (int)$id;
+        // Отозванные после выхода из аккаунта: токен статистичный, поэтому иначе
+        // он продолжал бы работать вечно. Выход обязан быть настоящим, иначе
+        // «вышел» означает «сессия в браузере стёрта, а доступ всё ещё выдан».
+        return isset(revoked_user_ids($cfg)[$id]) ? null : $id;
+    }
+
+    // Запасной путь для токенов, выданных до появления колонки.
+    $revoked = revoked_user_ids($cfg);
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE token = "" LIMIT 10000');
     $stmt->execute();
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $id = (int)$row['id'];
         if (isset($revoked[$id])) continue;
-        if (hash_equals(issueUserToken($cfg, $id), $token)) return $id;
+        if (!hash_equals(issueUserToken($cfg, $id), $token)) continue;
+        kladovkaRememberToken($pdo, $id, $token);
+        return $id;
     }
     return null;
+}
+
+/** Запомнить токен пользователя, чтобы следующий раз искать его по индексу. */
+function kladovkaRememberToken(PDO $pdo, int $userId, string $token): void {
+    $st = $pdo->prepare('UPDATE users SET token = :t WHERE id = :id');
+    $st->execute([':t' => $token, ':id' => $userId]);
 }
 
 /** id пользователей, чей вход отозван. Админ (0) здесь не бывает и не отзывается. */
@@ -73,11 +103,22 @@ function revoke_user(PDO $pdo, int $userId): void {
     $stmt->execute([':id' => $userId, ':at' => time()]);
 }
 
-/** Снять отзыв: новый вход снова выдаёт рабочий токен. */
-function unrevoke_user(PDO $pdo, int $userId): void {
+/**
+ * Снять отзыв и запомнить выданный токен.
+ *
+ * Два дела в одной функции, потому что оба относятся к одному событию — входу:
+ * отзыв снимается, чтобы вход снова работал, а токен записывается, чтобы
+ * находить его по индексу. Записать токен здесь, а снять отзыв — в другом месте
+ * означало бы, что при забытой половине вход либо не работает, либо ищется
+ * перебором.
+ */
+function unrevoke_user(PDO $pdo, int $userId, string $token = ''): void {
     if ($userId <= 0) return;
     $stmt = $pdo->prepare('DELETE FROM revoked_users WHERE user_id = :id');
     $stmt->execute([':id' => $userId]);
+    if ($token !== '') {
+        kladovkaRememberToken($pdo, $userId, $token);
+    }
 }
 
 // ---------- Отправка письма с подтверждением почты ----------
@@ -198,6 +239,16 @@ function schema(PDO $pdo): void {
     foreach ($uMigrations as $col => $sql) {
         if (!in_array($col, $uCols, true)) $pdo->exec($sql);
     }
+    // Токен пользователя хранится явно, чтобы искать его одним запросом по индексу,
+    // а не перебором всех пользователей с пересчётом HMAC на каждом запросе.
+    // Само значение токена не изменилось — он и дальше считается как
+    // HMAC('kladovka-user-' + id + secret), — изменился только способ найти
+    // пользователя по нему. У кого-то токен ещё не записан (заходил до этой
+    // правки): userIdForToken() достроит его при первом же обращении.
+    if (!in_array('token', $uCols, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN token TEXT NOT NULL DEFAULT ''");
+    }
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_token ON users(token)");
     // Миграция уже существующих баз: добавляем метки времени и владельца записи
     foreach (['places', 'shelves', 'polki', 'containers', 'items'] as $t) {
         $cols = array_column($pdo->query("PRAGMA table_info($t)")->fetchAll(PDO::FETCH_ASSOC), 'name');
@@ -576,11 +627,13 @@ switch ($action) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($user !== false && password_verify($pw, $user['password_hash'])) {
                 clearFails($CFG, $ip);
-                // Новый вход снимает отзыв: иначе после выхода вернуться
-                // было бы невозможно.
-                unrevoke_user(db($CFG), (int)$user['id']);
+                // Новый вход снимает отзыв (иначе после выхода вернуться
+                // было бы невозможно) и запоминает токен — по нему
+                // пользователя ищут дальше одним запросом по индексу.
+                $freshToken = issueUserToken($CFG, (int)$user['id']);
+                unrevoke_user(db($CFG), (int)$user['id'], $freshToken);
                 respond(200, [
-                    'token' => issueUserToken($CFG, (int)$user['id']),
+                    'token' => $freshToken,
                     'role' => 'user',
                     'username' => $username,
                     'email' => (string)$user['email'],
@@ -689,9 +742,10 @@ switch ($action) {
                     session_start();
                 }
                 session_regenerate_id(true);
-                unrevoke_user(db($CFG), (int)$user['id']);
+                $sessionToken = issueUserToken($CFG, (int)$user['id']);
+                unrevoke_user(db($CFG), (int)$user['id'], $sessionToken);
                 $_SESSION['kl_auth'] = [
-                    'token' => issueUserToken($CFG, (int)$user['id']),
+                    'token' => $sessionToken,
                     'role' => 'user',
                     'username' => (string)$user['username'],
                     'email' => '',
