@@ -10,15 +10,72 @@ session_start();
 $cabAuthed = !empty($_SESSION['kl_auth']);
 $cabUser = (string)($_SESSION['kl_auth']['username'] ?? '');
 
-// Актуальная версия APK на сервере, чтобы кнопка «Скачать» не устаревала
-$apkLatest = '';
-$apkVersion = '';
-$apkGlob = glob(__DIR__ . '/Kladovka-*.apk');
-if ($apkGlob) {
-    usort($apkGlob, fn($a, $b) => filemtime($b) - filemtime($a));
-    $apkLatest = basename($apkGlob[0]);
-    if (preg_match('/v(\d+\.\d+)/i', $apkLatest, $m)) $apkVersion = $m[1];
+// Актуальные сборки на сервере, чтобы кнопки «Скачать» не устаревали.
+// Основная ссылка ведёт на download-handler.php — он сам выбирает файл по ОС
+// посетителя. Прямые ссылки тоже держим: телефон не всегда присылает внятный
+// User-Agent, и человек должен иметь возможность взять APK, ничем не
+// распознаваясь.
+/**
+ * Самая свежая сборка нужного расширения.
+ *
+ * Перебор каталога регуляркой, а не glob: glob в PHP регистрозависим на всех
+ * платформах, включая Windows. Шаблон [Kk]ladovka-*.exe находит kladovka-v1.10.exe
+ * и молча не находит Kladovka-v1.11.EXE — ссылка просто пропадёт, и непонятно
+ * почему. То же касается имени в репозитории: kladovka-v1.2.apk против
+ * Kladovka-v1.2.apk на сервере.
+ *
+ * Версия выбирается из имени, а не по дате файла: перезалитый старый APK не
+ * должен снова стать «актуальным». Правило обязано совпадать с
+ * kladovkaCollect()/kladovkaLatest() из download-handler.php — иначе прямая
+ * ссылка и кнопка «Скачать приложение» разойдутся версиями.
+ *
+ * Каталоги — только под публичной частью (здесь и download/): отсюда строится
+ * ссылка, а ссылка на файл снаружи DOCUMENT_ROOT всё равно не откроется.
+ * В rel кладётся путь вместе с подкаталогом: сборка может лежать в download/,
+ * и голое имя в ссылке даст 404.
+ */
+function kladovkaNewestByExt(string $ext): array
+{
+    $best = null;
+    foreach ([__DIR__, __DIR__ . '/download'] as $dir) {
+        $entries = scandir($dir);
+        if ($entries === false) {
+            continue;
+        }
+        $prefix = $dir === __DIR__ ? '' : 'download/';
+        foreach ($entries as $entry) {
+            if ($entry === '' || $entry[0] === '.') {
+                continue;
+            }
+            $m = [];
+            if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.([A-Za-z0-9]+)$/i', $entry, $m)) {
+                continue;
+            }
+            if (strtolower($m[3]) !== $ext || !is_file($dir . '/' . $entry)) {
+                continue;
+            }
+            $major = (int)$m[1];
+            $minor = (int)($m[2] ?? 0);
+            if ($best === null
+                || $major > $best['major']
+                || ($major === $best['major'] && $minor > $best['minor'])) {
+                $best = ['rel' => $prefix . $entry, 'major' => $major, 'minor' => $minor];
+            }
+        }
+    }
+    return $best ?? ['rel' => '', 'major' => 0, 'minor' => 0];
 }
+
+$apkNewest = kladovkaNewestByExt('apk');
+$apkLatest = $apkNewest['rel'];
+$apkVersion = $apkLatest !== '' ? $apkNewest['major'] . '.' . $apkNewest['minor'] : '';
+
+// Настольная сборка необязательна: на сервере её может не быть. Тогда
+// download-handler.php отдаст посетителю APK и честно сообщит об этом
+// заголовком X-Kladovka-Served.
+$exeNewest = kladovkaNewestByExt('exe');
+$exeLatest = $exeNewest['rel'];
+$exeVersion = $exeLatest !== '' ? $exeNewest['major'] . '.' . $exeNewest['minor'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -405,9 +462,9 @@ img { max-width: 100%; height: auto; }
       <h1>Кладовка</h1>
       <p>Удобный складской учёт на телефоне. Располагайте вещи по местам, стеллажам и контейнерам. Ведите совместный учёт с семьёй или коллегами.</p>
       <div class="hero-buttons">
-        <a href="<?= $apkLatest !== '' ? '/' . $apkLatest : '#' ?>" class="btn btn-primary">
+        <a href="/download-handler.php" class="btn btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Скачать APK
+          Скачать приложение
         </a>
         <?php if ($cabAuthed): ?>
         <a href="/cabinet/" class="btn btn-ghost">Открыть кабинет</a>
@@ -415,6 +472,22 @@ img { max-width: 100%; height: auto; }
         <button class="btn btn-ghost" onclick="openModal()">Личный кабинет</button>
         <?php endif; ?>
       </div>
+      <p style="margin-top:14px; font-size:.85rem; color:var(--muted);">
+        <?php
+        $direct = [];
+        if ($apkLatest !== '') {
+            $direct[] = '<a href="/' . htmlspecialchars($apkLatest, ENT_QUOTES, 'UTF-8') . '">APK для Android'
+                . ($apkVersion !== '' ? ' v' . htmlspecialchars($apkVersion, ENT_QUOTES, 'UTF-8') : '') . '</a>';
+        }
+        if ($exeLatest !== '') {
+            $direct[] = '<a href="/' . htmlspecialchars($exeLatest, ENT_QUOTES, 'UTF-8') . '">EXE для Windows'
+                . ($exeVersion !== '' ? ' v' . htmlspecialchars($exeVersion, ENT_QUOTES, 'UTF-8') : '') . '</a>';
+        }
+        echo $direct
+            ? 'Ссылка выше сама подберёт файл под вашу систему. Можно и напрямую: ' . implode(' · ', $direct)
+            : 'Сборка скоро появится.';
+        ?>
+      </p>
     </div>
     <div class="phone-mockup">
       <div class="phone-screen">
@@ -508,10 +581,13 @@ img { max-width: 100%; height: auto; }
   <p class="section-subtitle">Три шага до полноценного складского учёта.</p>
   <div class="features-grid" style="max-width:800px; margin:0 auto;">
     <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--primary); font-weight:900;">1</div><h3>Установите сервер</h3><p>Скачайте <code>api.php</code>, положите на хостинг с PHP 8+ и SQLite. Откройте в браузере — приложение готово.</p></div>
-    <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--accent); font-weight:900;">2</div><h3>Установите приложение</h3><p>Скачайте APK, установите на Android. Введите адрес сервера, логин и пароль — войдите.</p></div>
+    <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--accent); font-weight:900;">2</div><h3>Установите приложение</h3><p>Скачайте APK и поставьте на Android, либо EXE на компьютер. Введите адрес сервера, логин и пароль — войдите.</p></div>
     <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--ok); font-weight:900;">3</div><h3>Начните учёт</h3><p>Добавляйте места, стеллажи, полки, контейнеры и вещи. Фотографируйте, синхронизируйте, делитесь.</p></div>
   </div>
-  <p style="text-align:center; color:var(--muted); margin-top:24px; font-size:.9rem;">
+  <p style="text-align:center; margin-top:24px;">
+    <a href="/download-handler.php" class="btn btn-primary btn-sm">Скачать под мою систему</a>
+  </p>
+  <p style="text-align:center; color:var(--muted); margin-top:14px; font-size:.9rem;">
     Работаете за компьютером? <?php if ($cabAuthed): ?>
     <a href="/cabinet/" class="btn btn-ghost btn-sm" style="margin-left:4px;">Открыть кабинет</a>
     <?php else: ?>
