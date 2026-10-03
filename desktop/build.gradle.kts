@@ -1,4 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 
 /** Версия приложения — одно место для сборки exe, установщика и ресурса VERSIONINFO. */
 val appVersion = "1.0.0"
@@ -138,12 +141,81 @@ val jlinkModules = listOf(
     "jdk.crypto.ec", "jdk.unsupported", "jdk.zipfs",
 ).joinToString(",")
 
-val uberJar = layout.buildDirectory.dir("compose/jars").map { dir ->
-    val jars = dir.asFile.listFiles { f -> f.name.endsWith(".jar") }.orEmpty()
+val rawUberJar = layout.buildDirectory.dir("compose/jars").map { dir ->
+    // Имя задаёт Compose-плагин; отжатый jar называется иначе и сюда не попадает.
+    val jars = dir.asFile.listFiles { f ->
+        f.name.startsWith("Kladovka-") && f.name.endsWith(".jar")
+    }.orEmpty()
     require(jars.size == 1) {
-        "ожидался ровно один uber-jar в ${dir.asFile}, найдено ${jars.size}"
+        "ожидался ровно один uber-jar в ${dir.asFile}, найдено ${jars.size}: " +
+        jars.joinToString { it.name }
     }
     jars.single()
+}
+
+/**
+ * Uber-jar после отжимания.
+ *
+ * sqlite-jdbc тащит нативные библиотеки всех платформ — 24 МБ, из которых на
+ * Windows нужны 3,6. В едином exe это пятая часть файла, поэтому лишнее
+ * отсекается здесь. Остальное (Compose, OkHttp, наш код) не трогаем.
+ */
+val uberJar = layout.buildDirectory.file("compose/jars/kladovka-slim.jar")
+
+val slimUberJar by tasks.registering {
+    description = "Оставляет в uber-jar только нужные платформенные библиотеки"
+    dependsOn("packageUberJarForCurrentOS")
+    inputs.file(rawUberJar)
+    outputs.file(uberJar)
+    doLast {
+        val src = rawUberJar.get()
+        val dst = uberJar.get().asFile
+        dst.parentFile.mkdirs()
+        delete(dst)
+
+        fun keep(name: String): Boolean {
+            if (!name.startsWith("org/sqlite/native/")) return true
+            // Путь вида org/sqlite/native/<ОС>/<архитектура>/<файл>. Сравнение
+            // регистронезависимое: в jar лежит "Windows", и при проверке на
+            // "windows" фильтр молча удалял всё, включая нужную библиотеку.
+            val os = name.removePrefix("org/sqlite/native/").substringBefore('/')
+            return os.equals("Windows", ignoreCase = true)
+        }
+
+        var dropped = 0L
+        var keptWindows = 0
+        ZipOutputStream(dst.outputStream().buffered()).use { out ->
+            ZipFile(src).use { zip ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val e = entries.nextElement()
+                    if (e.isDirectory) continue
+                    if (!keep(e.name)) {
+                        dropped += e.compressedSize
+                        continue
+                    }
+                    if (e.name.startsWith("org/sqlite/native/")) keptWindows++
+                    out.putNextEntry(ZipEntry(e.name))
+                    zip.getInputStream(e).use { it.copyTo(out) }
+                    out.closeEntry()
+                }
+            }
+        }
+        if (keptWindows == 0) {
+            throw GradleException(
+                "В отжатом jar не осталось ни одной нативной библиотеки sqlite " +
+                "для Windows — приложение не сможет открыть базу. Проверьте фильтр."
+            )
+        }
+        val saved = dst.length().let { src.length() - it }
+        logger.lifecycle(
+            "отсечено ${"%.1f".format(dropped / 1024.0 / 1024.0)} МБ нативных библиотек sqlite; " +
+            "uber-jar: ${"%.1f".format(src.length() / 1024.0 / 1024.0)} -> ${"%.1f".format(dst.length() / 1024.0 / 1024.0)} МБ"
+        )
+        if (saved <= 0) {
+            throw GradleException("отжимание не дало результата — проверьте фильтр")
+        }
+    }
 }
 
 /** Кодировка вывода дочерней JVM. Без неё русский текст из упаковщика
@@ -242,7 +314,7 @@ val compileWindowsResources by tasks.registering {
  *  считать актуальной. Считается до сборки заглушки, потому что входит в неё. */
 val payloadHash by tasks.registering {
     description = "Считает хэш содержимого payload"
-    dependsOn(jlinkRuntime, "packageUberJarForCurrentOS", compileSingleExeTools)
+    dependsOn(jlinkRuntime, slimUberJar, compileSingleExeTools)
     inputs.dir(runtimeDir)
     inputs.file(uberJar)
     outputs.file(hashTxt)
@@ -253,7 +325,7 @@ val payloadHash by tasks.registering {
             "-cp", toolsClasses.get().asFile.absolutePath,
             "SingleExe", "hash",
             runtimeDir.get().asFile.absolutePath,
-            uberJar.get().absolutePath,
+            uberJar.get().asFile.absolutePath,
         ).trim()
         val h = hashTxt.get().asFile
         h.parentFile.mkdirs()
@@ -306,7 +378,7 @@ val packSingleExe by tasks.registering(JavaExec::class) {
             stubExe.get().asFile.absolutePath,
             finalExe.get().asFile.absolutePath,
             runtimeDir.get().asFile.absolutePath,
-            uberJar.get().absolutePath,
+            uberJar.get().asFile.absolutePath,
         )
     }
     doLast {
@@ -319,7 +391,7 @@ val packSingleExe by tasks.registering(JavaExec::class) {
             "SingleExe", "verify",
             finalExe.get().asFile.absolutePath,
             runtimeDir.get().asFile.absolutePath,
-            uberJar.get().absolutePath,
+            uberJar.get().asFile.absolutePath,
         )
         val size = finalExe.get().asFile.length()
         logger.lifecycle(
