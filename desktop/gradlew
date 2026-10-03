@@ -1,0 +1,11 @@
+#!/bin/bash
+# Gradle wrapper script for Linux/Mac
+GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+WRAPPER_JAR="$GRADLE_USER_HOME/wrapper/dists/gradle-8.10/bin/gradle"
+
+if [ -f "$WRAPPER_JAR" ]; then
+    exec "$WRAPPER_JAR" "$@"
+else
+    echo "Gradle not found. Please install Gradle 8.10 or later."
+    exit 1
+fi

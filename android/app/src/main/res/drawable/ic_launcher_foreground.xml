@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Ярлык/замок на крышке (янтарный акцент) -->
+    <path
+        android:fillColor="#FFB876"
+        android:pathData="M54,44.8 a4,4 0 1 1 0,8 a4,4 0 1 1 0,-8 Z" />
+    <!-- Крышка коробки со скруглёнными углами -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,45 L80,45 Q82,45 82,47 L82,51 Q82,53 80,53 L28,53 Q26,53 26,51 L26,47 Q26,45 28,45 Z" />
+    <!-- Ручка-скобка над крышкой -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,40.5 L62,40.5 Q64,40.5 64,42.5 L64,44 L44,44 L44,42.5 Q44,40.5 46,40.5 Z" />
+    <!-- Тело коробки со скруглёнными углами -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,58 L76,58 Q78,58 78,60 L78,80 Q78,82 76,82 L32,82 Q30,82 30,80 L30,60 Q30,58 32,58 Z" />
+    <!-- Вещи внутри коробки (янтарные) -->
+    <path
+        android:fillColor="#FFB876"
+        android:pathData="M37,67 h11 v7 h-11 z" />
+    <path
+        android:fillColor="#FFB876"
+        android:pathData="M51,67 h11 v7 h-11 z" />
+    <path
+        android:fillColor="#FFB876"
+        android:pathData="M65,67 h8 v7 h-8 z" />
+</vector>

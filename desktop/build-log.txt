@@ -1,0 +1,902 @@
+
+> Configure project :
+The Provider.forUseAtConfigurationTime method has been deprecated. This is scheduled to be removed in Gradle 9.0. Simply remove the call. Consult the upgrading guide for further information: https://docs.gradle.org/8.10/userguide/upgrading_version_7.html#for_use_at_configuration_time_deprecation
+
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :convertXmlValueResourcesForMain NO-SOURCE
+> Task :copyNonXmlValueResourcesForMain NO-SOURCE
+> Task :prepareComposeResourcesTaskForMain NO-SOURCE
+> Task :generateResourceAccessorsForMain SKIPPED
+> Task :generateActualResourceCollectorsForMain SKIPPED
+> Task :generateComposeResClass SKIPPED
+> Task :assembleMainResources UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :convertXmlValueResourcesForTest NO-SOURCE
+> Task :copyNonXmlValueResourcesForTest NO-SOURCE
+> Task :prepareComposeResourcesTaskForTest NO-SOURCE
+> Task :generateResourceAccessorsForTest SKIPPED
+> Task :assembleTestResources UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :shared:processResources NO-SOURCE
+> Task :shared:processTestResources NO-SOURCE
+
+> Task :shared:compileKotlin
+w: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/shared/src/main/kotlin/ru/kladovka/data/SyncService.kt:106:57 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<ru.kladovka.data.Item>'.
+w: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/shared/src/main/kotlin/ru/kladovka/data/SyncService.kt:107:67 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<ru.kladovka.data.Container>'.
+w: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/shared/src/main/kotlin/ru/kladovka/data/SyncService.kt:108:61 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<ru.kladovka.data.Shelf>'.
+w: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/shared/src/main/kotlin/ru/kladovka/data/SyncService.kt:109:57 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<ru.kladovka.data.Polka>'.
+w: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/shared/src/main/kotlin/ru/kladovka/data/SyncService.kt:110:59 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<ru.kladovka.data.Place>'.
+
+> Task :shared:compileJava NO-SOURCE
+> Task :shared:classes UP-TO-DATE
+> Task :shared:jar
+> Task :shared:assemble
+> Task :shared:compileTestKotlin NO-SOURCE
+> Task :shared:compileTestJava NO-SOURCE
+> Task :shared:testClasses UP-TO-DATE
+> Task :shared:test NO-SOURCE
+> Task :shared:check UP-TO-DATE
+> Task :shared:build
+
+> Task :compileKotlin
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:13:1 Conflicting overloads:
+fun main(): Unit
+fun main(): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:13:14 Unresolved reference 'runBlocking'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:14:5 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:19:37 No value passed for parameter 'db'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:22:28 Cannot access 'constructor(): System': it is private in 'java/lang/System'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:22:35 Unresolved reference 'exit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:25 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:25 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:25 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:25 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:36 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:36 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/DesktopApp.kt:26:51 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:17:1 Conflicting overloads:
+fun main(): <ERROR TYPE REF: Unresolved name: runBlocking>
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:22:26 Unresolved reference 'create'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:44:17 None of the following candidates is applicable:
+fun ShelfEditScreen(repo: Repository, onBack: () -> Unit, onSave: (Shelf) -> Unit): Unit
+fun ShelfEditScreen(shelfId: Long, repo: <ERROR TYPE REF: Symbol not found for Repository>, onBack: () -> Unit, onSave: (ERROR CLASS: Symbol not found for Shelf) -> Unit, onCancel: () -> Unit): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:48:17 None of the following candidates is applicable:
+fun ContainerEditScreen(containerId: Long, repo: <ERROR TYPE REF: Symbol not found for Repository>, onBack: () -> Unit, onSave: (ERROR CLASS: Symbol not found for Container) -> Unit, onCancel: () -> Unit): Unit
+fun ContainerEditScreen(repo: Repository, onBack: () -> Unit, onSave: (Container) -> Unit): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:52:17 None of the following candidates is applicable:
+fun PolkaEditScreen(repo: Repository, onBack: () -> Unit, onSave: (Polka) -> Unit): Unit
+fun PolkaEditScreen(polkaId: Long, repo: <ERROR TYPE REF: Symbol not found for Repository>, onBack: () -> Unit, onSave: (ERROR CLASS: Symbol not found for Polka) -> Unit, onCancel: () -> Unit): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:56:17 None of the following candidates is applicable:
+fun PlaceEditScreen(repo: Repository, onBack: () -> Unit, onSave: (Place) -> Unit): Unit
+fun PlaceEditScreen(placeId: Long, repo: <ERROR TYPE REF: Symbol not found for Repository>, onBack: () -> Unit, onSave: (ERROR CLASS: Symbol not found for Place) -> Unit, onCancel: () -> Unit): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onDeleteShelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onDeletePolka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onDeleteContainer'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onDeletePlace'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onNavigateToSettings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/Main.kt:77:21 No value passed for parameter 'onNavigateToServer'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/MainKt.kt:3:1 Conflicting overloads:
+fun main(): <ERROR TYPE REF: Unresolved name: runBlocking>
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:34:7 Redeclaration:
+class AppDatabaseImpl : AppDatabase
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:34:54 Delegation is supported only for interfaces.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:34:54 This type has a constructor, so it must be initialized here.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:37:5 Abstract function 'insert' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:38:5 Abstract function 'update' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:39:5 Abstract function 'getById' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:40:5 Abstract function 'deleteById' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:41:5 Abstract function 'observeAll' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:42:5 Abstract function 'detachShelves' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:43:5 Abstract function 'detachPolki' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:44:5 Abstract function 'detachContainers' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:45:5 Abstract function 'detachItems' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:46:5 Abstract function 'findByName' in non-abstract class 'PlaceDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:50:5 Abstract function 'insert' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:51:5 Abstract function 'update' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:52:5 Abstract function 'getById' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:53:5 Abstract function 'deleteById' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:54:5 Abstract function 'observeAll' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:55:5 Abstract function 'detachPolki' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:56:5 Abstract function 'detachContainers' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:57:5 Abstract function 'detachItems' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:58:5 Abstract function 'findByName' in non-abstract class 'ShelfDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:62:5 Abstract function 'insert' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:63:5 Abstract function 'update' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:64:5 Abstract function 'getById' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:65:5 Abstract function 'deleteById' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:66:5 Abstract function 'observeAll' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:67:5 Abstract function 'findByName' in non-abstract class 'PolkaDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:71:5 Abstract function 'insert' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:72:5 Abstract function 'update' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:73:5 Abstract function 'getById' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:74:5 Abstract function 'deleteById' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:75:5 Abstract function 'observeAll' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:76:5 Abstract function 'detachItems' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:77:5 Abstract function 'findByName' in non-abstract class 'ContainerDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:81:5 Abstract function 'insert' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:82:5 Abstract function 'update' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:83:5 Abstract function 'getById' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:84:5 Abstract function 'deleteById' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:85:5 Abstract function 'search' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:86:5 Abstract function 'observeAll' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:87:5 Abstract function 'categories' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:88:5 Abstract function 'atomicallyAdjustQuantity' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabase.kt:89:5 Abstract function 'findByName' in non-abstract class 'ItemDao'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:15:7 Redeclaration:
+class AppDatabaseImpl : AppDatabase
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:15:80 Delegation is supported only for interfaces.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:15:80 This type has a constructor, so it must be initialized here.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:21:5 Conflicting overloads:
+fun createDatabase(): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:29:62 Unresolved reference 'path'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:34:13 Unresolved reference 'applyMigrations'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:39:18 Unresolved reference 'executeUpdate'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:56:21 Unresolved reference 'migrate5To6'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:76:5 Conflicting overloads:
+fun createDatabase(): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:145:66 Unresolved reference 'path'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:200:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Place?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:269:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Place?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:327:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Shelf?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:385:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Shelf?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:444:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Polka?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:469:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Polka?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:505:41 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:523:40 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:535:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Container?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:571:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Container?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:591:9 No parameter with name 'notes' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:649:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Item?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:712:9 Argument type mismatch: actual type is 'kotlin.Unit', but 'ru.kladovka.data.Item?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/AppDatabaseImpl.kt:750:83 Unresolved reference 'path'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:3:12 Unresolved reference 'google'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:4:12 Unresolved reference 'google'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:8:12 Unresolved reference 'json'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:9:12 Unresolved reference 'json'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:25:42 Unresolved reference 'MutableStateFlow'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:25:59 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:26:43 Unresolved reference 'MutableStateFlow'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:26:60 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:27:41 Unresolved reference 'MutableStateFlow'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:27:58 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:28:50 Unresolved reference 'MutableStateFlow'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:28:67 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:29:40 Unresolved reference 'MutableStateFlow'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:29:57 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:40:9 Suspend function 'suspend fun loadFromLocalStorage(): Unit' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:45:33 Suspend function 'suspend fun observeAll(): StateFlow<List<Place>>' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:46:34 Suspend function 'suspend fun observeAll(): StateFlow<List<Shelf>>' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:47:32 Suspend function 'suspend fun observeAll(): StateFlow<List<Polka>>' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:48:41 Suspend function 'suspend fun observeAll(): StateFlow<List<Container>>' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:49:31 Suspend function 'suspend fun observeAll(): StateFlow<List<Item>>' should be called only from a coroutine or another suspend function.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:59:62 Too many arguments for 'suspend fun load(key: String): Any?'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:59:71 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:59:99 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:60:64 Too many arguments for 'suspend fun load(key: String): Any?'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:60:73 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:60:101 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:61:61 Too many arguments for 'suspend fun load(key: String): Any?'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:61:70 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:61:98 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:62:70 Too many arguments for 'suspend fun load(key: String): Any?'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:62:79 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:62:111 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:63:60 Too many arguments for 'suspend fun load(key: String): Any?'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:63:69 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:63:96 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:67:53 Unresolved reference 'PlaceForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:67:92 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:67:107 Unresolved reference 'PlaceForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:67:130 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:68:39 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:69:39 Suspension functions can only be called within coroutine body.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:71:40 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:72:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:73:43 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:74:46 Unresolved reference 'latitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:75:47 Unresolved reference 'longitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:82:54 Unresolved reference 'ShelfForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:82:94 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:82:109 Unresolved reference 'ShelfForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:82:132 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:83:40 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:84:39 Suspension functions can only be called within coroutine body.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:86:40 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:87:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:88:43 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:89:45 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:96:52 Unresolved reference 'PolkaForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:96:90 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:96:105 Unresolved reference 'PolkaForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:96:128 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:97:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:98:39 Suspension functions can only be called within coroutine body.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:100:40 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:101:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:102:43 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:103:45 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:104:45 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:111:57 Unresolved reference 'ContainerForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:111:104 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:111:119 Unresolved reference 'ContainerForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:111:146 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:112:43 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:113:43 Suspension functions can only be called within coroutine body.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:115:40 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:116:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:117:33 No parameter with name 'notes' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:117:43 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:118:45 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:119:45 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:126:52 Unresolved reference 'ItemForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:126:89 Unresolved reference 'TypeToken'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:126:104 Unresolved reference 'ItemForStorage'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:126:126 Unresolved reference 'type'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:127:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:128:38 Suspension functions can only be called within coroutine body.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:130:40 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:131:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:132:46 Unresolved reference 'quantity'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:133:42 Unresolved reference 'unit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:134:44 Argument type mismatch: actual type is 'kotlin.text.CharCategory', but 'kotlin.String' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:135:43 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:136:49 Unresolved reference 'containerId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:137:45 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:138:45 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:139:47 Unresolved reference 'photoPath'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:140:44 Unresolved reference 'pinned'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:141:33 No parameter with name 'createdAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:141:47 Unresolved reference 'createdAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:142:33 No parameter with name 'updatedAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:142:47 Unresolved reference 'updatedAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:173:32 Unresolved reference 'google'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:347:17 No parameter with name 'createdAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:348:17 No parameter with name 'updatedAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:362:17 No parameter with name 'updatedAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:379:55 No parameter with name 'updatedAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:401:35 Unresolved reference 'ImageIO'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:404:32 Unresolved reference 'width'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:405:33 Unresolved reference 'height'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:407:37 'operator' modifier is required on 'FirNamedFunctionSymbol kotlin/compareTo' in 'compareTo'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:407:65 'operator' modifier is required on 'FirNamedFunctionSymbol kotlin/compareTo' in 'compareTo'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:409:35 Unresolved reference 'ImageIO'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:410:22 Unresolved reference 'ImageIO'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:422:20 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:422:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:422:39 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:423:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:424:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:425:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:425:27 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:425:39 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:425:45 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:426:24 Unresolved reference 'forEach'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:426:34 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:427:21 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:427:25 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:427:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:427:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:428:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:428:37 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:429:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:429:39 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:430:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:430:43 Unresolved reference 'latitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:431:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:431:44 Unresolved reference 'longitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:432:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:432:40 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:436:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:436:28 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:436:40 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:436:46 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:437:25 Unresolved reference 'forEach'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:437:35 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:438:21 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:438:25 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:438:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:438:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:439:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:439:37 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:440:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:440:39 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:441:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:441:40 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:442:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:442:42 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:443:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:443:43 Unresolved reference 'location'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:447:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:447:26 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:447:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:447:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:448:23 Unresolved reference 'forEach'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:448:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:449:21 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:449:25 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:449:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:449:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:450:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:450:37 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:451:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:451:39 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:452:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:452:40 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:453:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:453:42 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:454:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:454:42 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:458:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:458:31 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:458:43 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:458:49 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:459:28 Unresolved reference 'forEach'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:459:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:460:21 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:460:25 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:460:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:460:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:461:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:461:37 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:462:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:462:39 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:463:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:463:42 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:464:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:464:42 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:465:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:465:43 Unresolved reference 'location'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:469:13 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:469:26 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:469:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:469:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:470:23 Unresolved reference 'forEach'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:470:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:471:21 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:471:25 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:471:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:471:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:472:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:472:37 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:473:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:473:39 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:474:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:474:43 Unresolved reference 'quantity'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:475:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:475:39 Unresolved reference 'unit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:476:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:477:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:477:40 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:478:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:478:46 Unresolved reference 'containerId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:479:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:479:42 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:480:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:480:42 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:481:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:481:44 Unresolved reference 'photoPath'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:482:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:482:45 Unresolved reference 'pinned'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:483:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:483:44 Unresolved reference 'createdAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:484:25 Unresolved reference 'put'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:484:44 Unresolved reference 'updatedAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:494:24 Unresolved reference 'JSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:499:28 Unresolved reference 'clearAllTables'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:500:28 Unresolved reference 'clearAllTables'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:501:28 Unresolved reference 'clearAllTables'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:502:32 Unresolved reference 'clearAllTables'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:503:27 Unresolved reference 'clearAllTables'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:505:61 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:506:42 Unresolved reference 'length'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:507:36 Unresolved reference 'getJSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:519:63 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:520:43 Unresolved reference 'length'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:521:37 Unresolved reference 'getJSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:528:29 No parameter with name 'location' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:533:59 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:534:41 Unresolved reference 'length'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:535:35 Unresolved reference 'getJSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:547:69 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:548:46 Unresolved reference 'length'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:549:40 Unresolved reference 'getJSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:556:29 No parameter with name 'location' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:561:59 Unresolved reference 'JSONArray'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:562:41 Unresolved reference 'length'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:563:35 Unresolved reference 'getJSONObject'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:577:29 No parameter with name 'createdAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:578:29 No parameter with name 'updatedAt' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:588:29 Unresolved reference 'associateBy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:588:43 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:589:31 Unresolved reference 'associateBy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:589:45 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:590:37 Unresolved reference 'associateBy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:590:51 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:596:36 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:596:36 Not enough information to infer type argument for 'R'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:596:52 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:596:52 Not enough information to infer type argument for 'V'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:21 Argument type mismatch: actual type is 'R?', but 'K?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:24 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:54 Argument type mismatch: actual type is 'kotlin.Nothing?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:65 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:597:78 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:21 Argument type mismatch: actual type is 'kotlin.Nothing?', but 'K?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:21 Argument type mismatch: actual type is 'K', but 'K?' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:32 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:52 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:55 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:64 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:84 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:87 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:598:96 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:599:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:600:17 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:600:20 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:601:20 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:602:20 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:603:15 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:603:15 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:606:27 Unresolved reference 'sortedBy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:606:38 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:610:29 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:611:30 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:612:26 Unresolved reference 'quantity'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:613:30 Unresolved reference 'unit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:614:28 Argument type mismatch: actual type is 'kotlin.text.CharCategory', but 'kotlin.String' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/data/Repository.kt:616:30 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:23:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:25:14 Unresolved reference 'Container'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:35:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:35:26 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:35:52 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:35:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:36:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:36:26 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:36:52 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:36:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:40:17 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:40:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:40:25 Unresolved reference 'shelves'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:40:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:41:16 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:41:19 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:41:24 Unresolved reference 'places'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:41:31 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:45:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:80:17 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:81:44 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:83:31 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:92:17 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:93:44 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:95:31 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:152:36 Unresolved reference 'Container'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:186:53 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:191:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:224:53 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddContainerScreen.kt:229:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:91:36 Argument type mismatch: actual type is 'kotlin.Int?', but 'kotlin.Int' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:97:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:99:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:99:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:99:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:99:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:99:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:195:36 Argument type mismatch: actual type is 'kotlin.Int?', but 'kotlin.Int' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:201:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:203:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:203:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:203:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:203:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddItemScreen.kt:203:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPlaceScreen.kt:20:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPlaceScreen.kt:22:14 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPlaceScreen.kt:34:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPlaceScreen.kt:134:36 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:23:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:25:14 Unresolved reference 'Polka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:34:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:34:26 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:34:52 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:34:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:35:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:35:26 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:35:52 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:35:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:39:17 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:39:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:39:25 Unresolved reference 'shelves'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:39:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:40:16 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:40:19 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:40:24 Unresolved reference 'places'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:40:31 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:44:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:79:17 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:80:44 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:82:31 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:91:17 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:92:44 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:94:31 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:134:36 Unresolved reference 'Polka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:167:53 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:172:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:205:53 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddPolkaScreen.kt:210:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:23:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:25:14 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:33:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:33:26 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:33:52 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:33:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:36:16 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:36:19 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:36:24 Unresolved reference 'places'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:36:31 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:40:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:75:17 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:76:44 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:78:31 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:118:36 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:150:53 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/AddShelfScreen.kt:155:42 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:21:22 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:24:37 No value passed for parameter 'db'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:25:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:57:22 Unresolved reference 'shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:57:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:57:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:59:54 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:68:22 Unresolved reference 'polka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:68:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:68:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:70:53 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:79:22 Unresolved reference 'container'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:79:46 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:79:52 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:81:60 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:90:22 None of the following candidates is applicable:
+fun MeasureScope.place(width: Int, height: Int, leadingPlaceable: Placeable?, trailingPlaceable: Placeable?, headlinePlaceable: Placeable?, overlinePlaceable: Placeable?, supportingPlaceable: Placeable?, isThreeLine: Boolean, startPadding: Int, endPadding: Int, topPadding: Int): MeasureResult
+fun Placeable.PlacementScope.place(totalHeight: Int, width: Int, leadingPlaceable: Placeable?, trailingPlaceable: Placeable?, prefixPlaceable: Placeable?, suffixPlaceable: Placeable?, textFieldPlaceable: Placeable, labelPlaceable: Placeable?, placeholderPlaceable: Placeable?, containerPlaceable: Placeable, supportingPlaceable: Placeable?, animationProgress: Float, singleLine: Boolean, density: Float, layoutDirection: LayoutDirection, paddingValues: PaddingValues): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:90:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:90:38 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun <T, R> T.let(block: (T) -> R): R
+    [R|Contract description]
+     <
+        CallsInPlace(block, EXACTLY_ONCE)
+    >
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:90:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:92:53 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:33 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:99:48 Unresolved reference 'SyncState'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:102:28 Cannot access 'constructor(): System': it is private in 'java/lang/System'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:102:35 Unresolved reference 'exit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:108:29 Argument type mismatch: actual type is 'kotlin.Function1<kotlin.Long, kotlinx.coroutines.Job>', but 'kotlin.Function1<kotlin.Long, kotlin.Unit>' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:109:29 Argument type mismatch: actual type is 'kotlin.Function1<kotlin.Long, kotlinx.coroutines.Job>', but 'kotlin.Function1<kotlin.Long, kotlin.Unit>' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:110:33 Argument type mismatch: actual type is 'kotlin.Function1<kotlin.Long, kotlinx.coroutines.Job>', but 'kotlin.Function1<kotlin.Long, kotlin.Unit>' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:111:29 Argument type mismatch: actual type is 'kotlin.Function1<kotlin.Long, kotlinx.coroutines.Job>', but 'kotlin.Function1<kotlin.Long, kotlin.Unit>' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:116:83 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:116:97 Unresolved reference 'addShelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:118:21 Unresolved reference 'EditShelfScreen'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:118:84 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:118:98 Unresolved reference 'updateShelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:123:83 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:123:97 Unresolved reference 'addPolka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:125:21 Unresolved reference 'EditPolkaScreen'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:125:84 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:125:98 Unresolved reference 'updatePolka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:130:87 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:130:105 Unresolved reference 'addContainer'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:132:21 Unresolved reference 'EditContainerScreen'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:132:88 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:132:106 Unresolved reference 'updateContainer'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:137:83 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:137:97 Unresolved reference 'addPlace'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:139:21 Unresolved reference 'EditPlaceScreen'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:139:84 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:139:98 Unresolved reference 'updatePlace'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:144:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:144:95 Unresolved reference 'addItem'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:146:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:146:96 Unresolved reference 'updateItem'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:152:38 Unresolved reference 'sync'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:724:50 Unresolved reference 'status'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:727:39 Unresolved reference 'lastError'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:729:54 Unresolved reference 'lastError'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:738:46 Unresolved reference 'sync'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:760:59 Unresolved reference 'theme'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:778:15 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:790:16 Unresolved reference 'SyncState'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:801:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:815:24 Unresolved reference 'tabs'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:816:31 Unresolved reference 'selectedTab'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:817:35 Unresolved reference 'selectedTab'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:822:19 Unresolved reference 'selectedTab'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:827:35 Unresolved reference 'showItemDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:830:36 Unresolved reference 'showShelfDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:833:36 Unresolved reference 'showPolkaDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:836:40 Unresolved reference 'showContainerDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:839:36 Unresolved reference 'showPlaceDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:850:36 Unresolved reference 'showShelfDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:853:36 Unresolved reference 'showPolkaDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:873:36 Unresolved reference 'showPolkaDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:896:40 Unresolved reference 'showContainerDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:919:36 Unresolved reference 'showPlaceDialog'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:932:36 Unresolved reference 'selectedTab'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:980:16 Unresolved reference 'SyncState'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1007:46 Unresolved reference 'status'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1010:35 Unresolved reference 'lastSyncAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1012:136 Unresolved reference 'lastSyncAt'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1016:35 Unresolved reference 'lastError'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1018:50 Unresolved reference 'lastError'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1034:15 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/App.kt:1061:54 Unresolved reference 'theme'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:20:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:22:14 Unresolved reference 'Container'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:29:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:29:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:29:48 Unresolved reference 'Container'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:29:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:32:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:32:20 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:32:46 Unresolved reference 'ContainerId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:32:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:33:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:33:20 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:33:46 Unresolved reference 'ContainerId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:33:60 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:37:22 Unresolved reference 'containers'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:37:46 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:40:22 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:41:23 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:42:25 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:43:25 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:44:26 Unresolved reference 'location'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:51:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:156:46 Unresolved reference 'copy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ContainerEditScreen.kt:157:49 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:78:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:81:43 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:99:25 No parameter with name 'location' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:100:25 No parameter with name 'notes' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:103:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:105:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:105:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:105:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:105:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:105:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:187:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:190:43 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:208:25 No parameter with name 'location' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:209:25 No parameter with name 'notes' found.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:212:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:214:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:214:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:214:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:214:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditContainerScreen.kt:214:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:84:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:86:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:86:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:86:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:86:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:86:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:176:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:178:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:178:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:178:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:178:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPlaceScreen.kt:178:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:67:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:70:45 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:91:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:93:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:93:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:93:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:93:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:93:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:164:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:167:45 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:188:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:190:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:190:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:190:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:190:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditPolkaScreen.kt:190:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:72:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:75:43 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:96:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:98:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:98:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:98:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:98:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:98:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:169:49 Unresolved reference 'Alignment'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:172:43 'if' must have both main and 'else' branches when used as an expression.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:193:21 Argument type mismatch: actual type is 'kotlin.Unit', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:195:21 Unresolved reference 'scaffoldPadding'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:195:21 Argument type mismatch: actual type is 'R?', but 'K' was expected.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:195:38 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:195:42 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/EditShelfScreen.kt:195:44 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:20:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:22:16 Unresolved reference 'Item'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:31:17 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:31:17 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:31:43 Unresolved reference 'Item'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:31:50 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:34:21 Unresolved reference 'items'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:34:40 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:40:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:60:31 Smart cast to 'TypeVariable(K)?' is impossible, because 'item' is a delegated property.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:70:45 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:72:35 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:81:45 Unresolved reference 'quantity'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:92:45 Unresolved reference 'unit'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:94:35 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:103:45 Unresolved reference 'category'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:105:35 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:114:45 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:116:35 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:133:69 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemDetailsScreen.kt:145:61 Unresolved reference 'pinned'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:87:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:122:21 None of the following candidates is applicable:
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: @Composable() ComposableFunction0<Unit>? = ..., placeholder: @Composable() ComposableFunction0<Unit>? = ..., leadingIcon: @Composable() ComposableFunction0<Unit>? = ..., trailingIcon: @Composable() ComposableFunction0<Unit>? = ..., prefix: @Composable() ComposableFunction0<Unit>? = ..., suffix: @Composable() ComposableFunction0<Unit>? = ..., supportingText: @Composable() ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:124:58 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:125:35 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:214:17 Unresolved reference 'LazyColumn'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:215:21 Unresolved reference 'items'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:215:41 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ItemEditScreen.kt:216:25 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:18:15 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:51:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:64:13 Cannot access 'fun HorizontalRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int) -> Unit): Unit': it is private in file.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:80:29 This foundation API is experimental and is likely to change or be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:100:29 This foundation API is experimental and is likely to change or be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:267:33 Unresolved reference 'repo'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:270:45 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:309:33 Unresolved reference 'repo'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:312:47 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:351:33 Unresolved reference 'repo'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/MainScreen.kt:354:47 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:22:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:24:14 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:31:18 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:31:18 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:31:44 Unresolved reference 'Place'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:31:52 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:38:22 Unresolved reference 'places'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:38:42 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:41:22 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:42:23 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:43:26 Unresolved reference 'latitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:44:27 Unresolved reference 'longitude'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:51:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:145:42 Unresolved reference 'copy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PlaceEditScreen.kt:146:45 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:20:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:22:14 Unresolved reference 'Polka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:29:18 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:29:18 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:29:44 Unresolved reference 'Polka'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:29:52 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:32:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:32:20 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:32:46 Unresolved reference 'PolkaId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:32:56 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:33:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:33:20 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:33:46 Unresolved reference 'PolkaId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:33:56 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:36:22 Unresolved reference 'polki'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:36:41 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:39:22 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:40:23 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:41:25 Unresolved reference 'shelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:42:25 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:49:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:137:42 Unresolved reference 'copy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/PolkaEditScreen.kt:138:45 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:13:25 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:17:15 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:18:22 Unresolved reference 'Settings'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:33 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:25:57 Unresolved reference 'themeMode'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:21 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:21 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:21 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:21 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:32 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:32 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:26:56 Unresolved reference 'autoSync'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:25 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:25 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:25 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:25 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:36 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:36 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:27:60 Unresolved reference 'syncInterval'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:22 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:22 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:33 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:28:57 Unresolved reference 'serverUrl'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:32:30 Unresolved reference 'themeMode'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:33:29 Unresolved reference 'autoSync'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:34:33 Unresolved reference 'syncInterval'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:35:30 Unresolved reference 'serverUrl'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:42:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:74:44 'when' expression must be exhaustive. Add an 'else' branch.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:94:49 Unresolved reference 'not' for operator '!'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/SettingsScreen.kt:275:41 Unresolved reference 'copy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:20:11 Unresolved reference 'Repository'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:22:14 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:29:18 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:29:18 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:29:44 Unresolved reference 'Shelf'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:29:52 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:32:20 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:32:20 Not enough information to infer type argument for 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:32:46 Unresolved reference 'ShelfId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:32:56 Null cannot be a value of a non-null type 'T'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:35:22 Unresolved reference 'shelves'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:35:43 Unresolved reference 'it'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:38:22 Unresolved reference 'name'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:39:23 Unresolved reference 'notes'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:40:25 Unresolved reference 'placeId'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:47:13 This material API is experimental and is likely to change or to be removed in the future.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:124:42 Unresolved reference 'copy'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/ShelfEditScreen.kt:125:45 Unresolved reference 'id'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/Theme.kt:11:16 Unresolved reference 'ThemeMode'.
+e: file:///C:/Users/Night/KladovkaProjects/kladovka-desktop/src/main/java/ru/kladovka/ui/Theme.kt:14:18 'when' expression must be exhaustive. Add an 'else' branch.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+
+> Run with --stacktrace option to get the stack trace.
+> Task :compileKotlin FAILED
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 9s
+7 actionable tasks: 3 executed, 4 up-to-date

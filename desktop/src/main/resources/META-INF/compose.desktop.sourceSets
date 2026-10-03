@@ -1,0 +1,4 @@
+[androidMain]=jvmMain
+[androidUnitTest]=jvmTest
+[androidInstrumentedTest]=jvmTest
+[androidAndroidTest]=jvmTest
