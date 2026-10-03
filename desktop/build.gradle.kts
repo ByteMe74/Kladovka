@@ -154,16 +154,46 @@ val rawUberJar = layout.buildDirectory.dir("compose/jars").map { dir ->
 }
 
 /**
+ * Иконки, на которые в jar кто-то ссылается.
+ *
+ * Список не составлен на глаз: его дал `jdeps -verbose:class` по исходному
+ * uber-jar — то есть по всем классам сразу. 12 иконок нужны нашему UI,
+ * ещё 6 material3 использует внутри своих компонентов (SegmentedButton,
+ * ExposedDropdownMenu, DatePicker, Snackbar), поэтому без них компоненты
+ * падали бы NoClassDefFoundError в момент открытия диалога, а не при сборке.
+ *
+ * Остальные ~11 400 классов в `androidx/compose/material/icons/` — это пять
+ * стилей по 2133 иконки, из которых приложение не использует ни одного.
+ * Это 84 МБ распакованных, пятая часть веса exe.
+ */
+val keptIcons = setOf(
+    "filled/Add", "filled/Archive", "filled/ArrowDropDown", "filled/Check",
+    "filled/Clear", "filled/Close", "filled/DateRange", "filled/Edit",
+    "filled/Inventory2", "filled/Layers", "filled/Place", "filled/PushPin",
+    "filled/Remove", "filled/Search", "filled/Settings", "filled/Sync",
+    "automirrored/filled/KeyboardArrowLeft",
+    "automirrored/filled/KeyboardArrowRight",
+)
+
+/** `ArchiveKt.class` -> `Archive`; `ArchiveKt$Inner.class` -> `Archive`. */
+fun iconBase(fileName: String): String? {
+    if (!fileName.endsWith(".class")) return null
+    val base = fileName.substringBefore('$').removeSuffix(".class")
+    return if (base.endsWith("Kt")) base.removeSuffix("Kt") else null
+}
+
+/**
  * Uber-jar после отжимания.
  *
- * sqlite-jdbc тащит нативные библиотеки всех платформ — 24 МБ, из которых на
- * Windows нужны 3,6. В едином exe это пятая часть файла, поэтому лишнее
- * отсекается здесь. Остальное (Compose, OkHttp, наш код) не трогаем.
+ * Две вещи, которые приложение не использует, но тащит в каждом экземпляре:
+ * нативные библиотеки sqlite для чужих платформ (24 МБ, нужны 3,6) и
+ * остальные стили material-иконок (84 МБ, используются 18 классов).
+ * Остальное — Compose, OkHttp, наш код — не трогаем.
  */
 val uberJar = layout.buildDirectory.file("compose/jars/kladovka-slim.jar")
 
 val slimUberJar by tasks.registering {
-    description = "Оставляет в uber-jar только нужные платформенные библиотеки"
+    description = "Оставляет в uber-jar только используемые библиотеки и иконки"
     dependsOn("packageUberJarForCurrentOS")
     inputs.file(rawUberJar)
     outputs.file(uberJar)
@@ -173,13 +203,31 @@ val slimUberJar by tasks.registering {
         dst.parentFile.mkdirs()
         delete(dst)
 
+        val sqlitePrefix = "org/sqlite/native/"
+        val iconsPrefix = "androidx/compose/material/icons/"
+        val seenIcons = mutableSetOf<String>()
+
         fun keep(name: String): Boolean {
-            if (!name.startsWith("org/sqlite/native/")) return true
-            // Путь вида org/sqlite/native/<ОС>/<архитектура>/<файл>. Сравнение
-            // регистронезависимое: в jar лежит "Windows", и при проверке на
-            // "windows" фильтр молча удалял всё, включая нужную библиотеку.
-            val os = name.removePrefix("org/sqlite/native/").substringBefore('/')
-            return os.equals("Windows", ignoreCase = true)
+            if (name.startsWith(sqlitePrefix)) {
+                // Путь вида org/sqlite/native/<ОС>/<архитектура>/<файл>. Сравнение
+                // регистронезависимое: в jar лежит "Windows", и при проверке на
+                // "windows" фильтр молча удалял всё, включая нужную библиотеку.
+                val os = name.removePrefix(sqlitePrefix).substringBefore('/')
+                return os.equals("Windows", ignoreCase = true)
+            }
+            if (!name.startsWith(iconsPrefix)) return true
+            val parts = name.removePrefix(iconsPrefix).split('/')
+            // Корень пакета: Icons.class, Icons$Filled.class, IconsKt.class.
+            // Нужен всем — это сам объект Icons, без него не работает Icons.Filled.
+            if (parts.size < 2) return true
+            val base = iconBase(parts.last()) ?: return false
+            val style = parts.dropLast(1).joinToString("/")
+            val key = "$style/$base"
+            if (key in keptIcons) {
+                seenIcons += key
+                return true
+            }
+            return false
         }
 
         var dropped = 0L
@@ -194,7 +242,7 @@ val slimUberJar by tasks.registering {
                         dropped += e.compressedSize
                         continue
                     }
-                    if (e.name.startsWith("org/sqlite/native/")) keptWindows++
+                    if (e.name.startsWith(sqlitePrefix)) keptWindows++
                     out.putNextEntry(ZipEntry(e.name))
                     zip.getInputStream(e).use { it.copyTo(out) }
                     out.closeEntry()
@@ -207,10 +255,22 @@ val slimUberJar by tasks.registering {
                 "для Windows — приложение не сможет открыть базу. Проверьте фильтр."
             )
         }
-        val saved = dst.length().let { src.length() - it }
+        // Полнота списка иконок: если хотя бы одной не оказалось, значит имя в
+        // keptIcons не совпало с тем, что лежит в jar, и приложение упадёт в
+        // момент отрисовки вкладки. Лучше узнать об этом здесь.
+        val missing = keptIcons - seenIcons
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "В исходном jar не нашлись иконки: ${missing.joinToString()}. " +
+                "Проверьте имена в keptIcons — без них приложение упадёт при отрисовке."
+            )
+        }
+        val saved = src.length() - dst.length()
         logger.lifecycle(
-            "отсечено ${"%.1f".format(dropped / 1024.0 / 1024.0)} МБ нативных библиотек sqlite; " +
-            "uber-jar: ${"%.1f".format(src.length() / 1024.0 / 1024.0)} -> ${"%.1f".format(dst.length() / 1024.0 / 1024.0)} МБ"
+            "отсечено ${"%.1f".format(dropped / 1024.0 / 1024.0)} МБ " +
+            "(нативные библиотеки sqlite чужих платформ + неиспользуемые material-иконки); " +
+            "uber-jar: ${"%.1f".format(src.length() / 1024.0 / 1024.0)} -> " +
+            "${"%.1f".format(dst.length() / 1024.0 / 1024.0)} МБ"
         )
         if (saved <= 0) {
             throw GradleException("отжимание не дало результата — проверьте фильтр")
@@ -227,6 +287,33 @@ fun jdk21bin(name: String): String {
         languageVersion.set(JavaLanguageVersion.of(21))
     }.get().metadata.installationPath.asFile
     return File(home, "bin/$name").absolutePath
+}
+
+/**
+ * Прогоняет каждую иконку, оставленную в отжатом jar, и смотрит, что она
+ * строит непустой вектор.
+ *
+ * Нужна отдельно от проверки имён в slimUberJar. Отсутствующий класс иконки
+ * не ломает ни сборку, ни запуск: он выстреливает NoClassDefFoundError уже в
+ * момент отрисовки вкладки, то есть у пользователя, а не у нас. Совпадение
+ * имён в списке при этом ничего не доказывает — доказывает только прогон.
+ */
+val checkIcons by tasks.registering {
+    group = "verification"
+    description = "Проверяет, что все оставленные в jar иконки отрисовываются"
+    dependsOn(slimUberJar)
+    inputs.file(uberJar)
+    inputs.file(layout.projectDirectory.file("tools/IconCheck.java"))
+    doLast {
+        runTool(
+            jdk21bin("java.exe"),
+            *utf8Out,
+            "-cp", uberJar.get().asFile.absolutePath,
+            layout.projectDirectory.file("tools/IconCheck.java").asFile.absolutePath,
+            layout.projectDirectory.asFile.absolutePath,
+            *keptIcons.toTypedArray(),
+        )
+    }
 }
 
 val compileSingleExeTools by tasks.registering(JavaCompile::class) {
@@ -363,7 +450,7 @@ val compileLauncher by tasks.registering {
 val packSingleExe by tasks.registering(JavaExec::class) {
     group = "distribution"
     description = "Приклеивает payload к заглушке — получается Kladovka.exe"
-    dependsOn(compileLauncher)
+    dependsOn(compileLauncher, checkIcons)
     inputs.file(stubExe)
     inputs.dir(runtimeDir)
     inputs.file(uberJar)
