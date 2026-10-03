@@ -17,15 +17,18 @@ session_start();
 // платформах, включая Windows, и шаблон Kladovka-*.apk не находит лежащий рядом
 // kladovka-v1.2.apk — кнопка просто не появлялась ни в кабинете, ни в шапке.
 // Версия выбирается из имени как (major, minor), а не по дате файла, и правило
-// обязано совпадать с kladovkaNewestByExt() в landing-index.php и
-// kladovkaLatest() в download-handler.php, иначе ссылки разойдутся версиями.
+// обязано совпадать с kladovkaNewestByExt() в index.php и kladovkaLatest()
+// в download-handler.php, иначе ссылки разойдутся версиями.
 $webRoot = dirname(__DIR__);
 $apkHref = '';
 $apkVersion = '';
 $apkBest = null;
 foreach ([$webRoot, $webRoot . '/download'] as $dir) {
     $prefix = $dir === $webRoot ? '' : 'download/';
-    $entries = @scandir($dir);
+    if (!is_dir($dir)) {
+        continue;
+    }
+    $entries = scandir($dir);
     if ($entries === false) {
         continue;
     }
@@ -122,6 +125,12 @@ if (!empty($_SESSION['kl_auth']) && is_array($_SESSION['kl_auth'])) {
 
 // ---------- вход ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['password']) && !isset($_POST['reg_username'])) {
+    $token = $_SESSION['csrf_token'] ?? '';
+    $submitted = $_POST['_csrf'] ?? '';
+    if ($token === '' || !hash_equals($token, $submitted)) {
+        http_response_code(403);
+        die('CSRF token mismatch');
+    }
     $payload = ['password' => (string)$_POST['password']];
     if (trim((string)($_POST['username'] ?? '')) !== '') $payload['username'] = trim((string)$_POST['username']);
     [$code, $j] = klApi($apiUrl . '?action=login', $payload);
@@ -540,6 +549,14 @@ code{background:rgba(0,240,255,.05);border:1px solid var(--line);padding:1px 6px
   .search-row{flex-wrap:wrap}
 }
 </style>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00f0ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Кладовка">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- /PWA -->
 </head>
 <body>
 <?php if ($needConfirm): ?>
@@ -1359,5 +1376,16 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refresh(true); });
 </script>
 <?php endif; ?>
+<!-- PWA -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+<!-- /PWA -->
 </body>
 </html>

@@ -1,5 +1,10 @@
 <?php
 // Кладовка — главная (лендинг). PHP-обёртка: знает статус входа из сессии кабинета.
+//
+// Файл обслуживается сервером как index.php и кладётся в корень сайта.
+// Раньше в репозитории лежал landing-index.php — копия, которую никто не
+// открывал: сервер отдавал index.php, и правки лендинга до прода не доходили.
+// Теперь источник истины здесь.
 declare(strict_types=1);
 
 // Сжатие страницы (gzip), если клиент поддерживает — быстрее загрузка
@@ -7,6 +12,9 @@ if (function_exists('ob_gzhandler') && !ob_start('ob_gzhandler')) ob_start();
 
 session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 $cabAuthed = !empty($_SESSION['kl_auth']);
 $cabUser = (string)($_SESSION['kl_auth']['username'] ?? '');
 
@@ -15,19 +23,18 @@ $cabUser = (string)($_SESSION['kl_auth']['username'] ?? '');
 // посетителя. Прямые ссылки тоже держим: телефон не всегда присылает внятный
 // User-Agent, и человек должен иметь возможность взять APK, ничем не
 // распознаваясь.
+
 /**
  * Самая свежая сборка нужного расширения.
  *
  * Перебор каталога регуляркой, а не glob: glob в PHP регистрозависим на всех
- * платформах, включая Windows. Шаблон [Kk]ladovka-*.exe находит kladovka-v1.10.exe
- * и молча не находит Kladovka-v1.11.EXE — ссылка просто пропадёт, и непонятно
- * почему. То же касается имени в репозитории: kladovka-v1.2.apk против
- * Kladovka-v1.2.apk на сервере.
+ * платформах, включая Windows. Шаблон Kladovka-*.apk не находит лежащий рядом
+ * kladovka-v1.2.apk — кнопка просто исчезает, и непонятно почему.
  *
- * Версия выбирается из имени, а не по дате файла: перезалитый старый APK не
- * должен снова стать «актуальным». Правило обязано совпадать с
- * kladovkaCollect()/kladovkaLatest() из download-handler.php — иначе прямая
- * ссылка и кнопка «Скачать приложение» разойдутся версиями.
+ * Версия выбирается из имени как (major, minor), а не по дате файла: перезалитый
+ * старый APK не должен снова стать «актуальным». Правило обязано совпадать с
+ * kladovkaLatest() из download-handler.php — иначе прямая ссылка и кнопка
+ * «Скачать приложение» разойдутся версиями.
  *
  * Каталоги — только под публичной частью (здесь и download/): отсюда строится
  * ссылка, а ссылка на файл снаружи DOCUMENT_ROOT всё равно не откроется.
@@ -432,14 +439,40 @@ img { max-width: 100%; height: auto; }
   .h-arrow, .share-arrow, .feature-card:hover .feature-icon { animation: none; }
   .bg-fx { animation: none; }
 }
+
+/* ===== Skip-link ===== */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 1000;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: #06090f;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
 </style>
 </head>
 <body>
+<!-- Skip-link для accessibility -->
+<a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
 <!-- ===== ШАПКА ===== -->
 <header class="topbar">
   <a class="brand" href="/"><span class="logo">📦</span>Кладовка</a>
-  <nav>
+  <nav aria-label="Навигация по сайту">
     <a href="#features">Возможности</a>
     <a href="#install">Установка</a>
     <a href="#screenshots">Скриншоты</a>
@@ -461,7 +494,7 @@ img { max-width: 100%; height: auto; }
 <div class="grid-overlay" aria-hidden="true"></div>
 
 <!-- ===== HERO ===== -->
-<section class="hero">
+<section class="hero" id="main-content">
   <div class="hero-inner">
     <div class="hero-text">
       <h1>Кладовка</h1>
@@ -678,6 +711,7 @@ img { max-width: 100%; height: auto; }
     <h2 id="loginTitle">Вход в кабинет</h2>
     <p class="modal-sub">Просмотр и редактирование базы с ПК.</p>
     <form method="post" action="/cabinet/" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
       <div class="field">
         <label for="cab-username">Имя пользователя</label>
         <input type="text" id="cab-username" name="username" placeholder="Имя пользователя" autocomplete="username">
