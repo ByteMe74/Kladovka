@@ -6,6 +6,20 @@ import java.util.zip.ZipOutputStream
 /** Версия приложения — одно место для сборки exe, установщика и ресурса VERSIONINFO. */
 val appVersion = "1.0.0"
 
+/**
+ * Код версии для сравнения с сервером — та же схема, что у Android
+ * (`major*100 + minor`), чтобы latestExe и latestApp считали одинаково.
+ * Взят из appVersion, а не написан руками: две строки со временем
+ * разъедутся, и обновление либо не заметится, либо будет предлагаться вечно.
+ */
+val appVersionCode: Int = run {
+    val parts = appVersion.split('.')
+    val major = parts.getOrElse(0) { "0" }.toIntOrNull() ?: 0
+    val minor = parts.getOrElse(1) { "0" }.toIntOrNull() ?: 0
+    require(major * 100 + minor > 0) { "Не разобрать версию $appVersion как major.minor" }
+    major * 100 + minor
+}
+
 plugins {
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.serialization") version "2.1.0"
@@ -86,6 +100,43 @@ val stageAppIcon by tasks.registering(Copy::class) {
 sourceSets["main"].resources.srcDir(appIconDir)
 
 tasks.named("processResources") { dependsOn(stageAppIcon) }
+
+// ================================================================= Версия в classpath
+//
+// Приложению нужно знать свою версию, чтобы отличить «есть обновление» от
+// «сервер отстаёт». Раньше номер жил только в build.gradle.kts, и в коде его
+// не было: сверить не с чем было. Пишем его ресурсом рядом со значком, из того
+// же appVersion, — иначе версия в свойствах файла и версия в приложении
+// разъедутся при первой же правке одной из двух строк.
+val versionResourceDir = layout.buildDirectory.dir("generated/version")
+
+val writeVersionResource by tasks.registering {
+    val outDir = versionResourceDir
+    val v = appVersion
+    val vc = appVersionCode.toString()
+    inputs.property("version", v)
+    inputs.property("versionCode", vc)
+    outputs.dir(outDir)
+    doLast {
+        val dir = outDir.get().asFile
+        dir.mkdirs()
+        // Схема та же, что у Android: major*100+minor, чтобы сервер и клиент
+        // считали одно и то же. Здесь major.minor, patch в код не входит —
+        // патчи сервер не различает.
+        val f = File(dir, "kladovka-version.properties")
+        f.writeText(
+            """
+            version=$v
+            versionCode=$vc
+            versionMajor=${appVersion.substringBefore('.')}
+            versionMinor=${appVersion.split('.').getOrElse(1) { "0" }}
+            """.trimIndent() + "\n"
+        )
+    }
+}
+
+sourceSets["main"].resources.srcDir(versionResourceDir)
+tasks.named("processResources") { dependsOn(writeVersionResource) }
 
 // ================================================================= Единый .exe
 //
@@ -196,7 +247,7 @@ val keptIcons = setOf(
     "filled/Add", "filled/Archive", "filled/ArrowDropDown", "filled/Check",
     "filled/Clear", "filled/Close", "filled/DateRange", "filled/Edit",
     "filled/Inventory2", "filled/Layers", "filled/Place", "filled/PushPin",
-    "filled/Remove", "filled/Search", "filled/Settings", "filled/Sync",
+    "filled/Refresh", "filled/Remove", "filled/Search", "filled/Settings", "filled/Sync",
     "automirrored/filled/KeyboardArrowLeft",
     "automirrored/filled/KeyboardArrowRight",
 )
@@ -232,6 +283,10 @@ val slimUberJar by tasks.registering {
         val sqlitePrefix = "org/sqlite/native/"
         val iconsPrefix = "androidx/compose/material/icons/"
         val seenIcons = mutableSetOf<String>()
+        // Имя ресурса с версией: его обязано остаться в отжатом jar, иначе
+        // приложение не будет знать своей версии (см. проверку ниже).
+        val versionResource = "kladovka-version.properties"
+        val keptVersionResource = mutableListOf<String>()
 
         fun keep(name: String): Boolean {
             if (name.startsWith(sqlitePrefix)) {
@@ -269,6 +324,12 @@ val slimUberJar by tasks.registering {
                         continue
                     }
                     if (e.name.startsWith(sqlitePrefix)) keptWindows++
+                    if (e.name == versionResource) {
+                        keptVersionResource += String(
+                            zip.getInputStream(e).readBytes(),
+                            Charsets.UTF_8
+                        ).trim()
+                    }
                     out.putNextEntry(ZipEntry(e.name))
                     zip.getInputStream(e).use { it.copyTo(out) }
                     out.closeEntry()
@@ -291,6 +352,18 @@ val slimUberJar by tasks.registering {
                 "Проверьте имена в keptIcons — без них приложение упадёт при отрисовке."
             )
         }
+        // Ресурс с версией обязан выжить отсечение: без него UpdateChecker не
+        // знает своей версии, молча считает её нулевой, и обновление не
+        // предлагается никогда — при этом сборка собирается и запускается, то
+        // есть поломка выглядит как «работает, но обновлений нет».
+        if (keptVersionResource.isEmpty()) {
+            throw GradleException(
+                "В отжатом jar нет $versionResource. Приложение не знает своей " +
+                "версии и не сможет предложить обновление. Проверьте, что задача " +
+                "writeVersionResource подключена к processResources."
+            )
+        }
+        logger.lifecycle("версия в jar: ${keptVersionResource.first()}")
         val saved = src.length() - dst.length()
         logger.lifecycle(
             "отсечено ${"%.1f".format(dropped / 1024.0 / 1024.0)} МБ " +

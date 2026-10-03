@@ -548,8 +548,11 @@ $token = (function () {
 
 $pdo = db($CFG);
 
-// latestApk — ПУБЛИЧНАЯ проба ДО логина (без токена). Обрабатывается ДО switch:
+// latestApk и latestExe — ПУБЛИЧНЫЕ пробы ДО логина (без токена). Обрабатываются
+// ДО switch: человеку надо узнать о новой сборке до входа в аккаунт. Именно так
+// сделан и login — тоже вне switch, чтобы лимит попыток не обходился.
 if ($action === 'latestApk') latestApk($CFG);
+if ($action === 'latestExe') latestExe($CFG);
 
 switch ($action) {
     case 'login': {
@@ -1091,6 +1094,34 @@ switch ($action) {
  */
 function kladovkaApksIn(string $dir): array
 {
+    return kladovkaBuildsIn($dir, 'apk');
+}
+
+/**
+ * Регулярка имени сборки: Kladovka-v1.48.apk, Kladovka-v1.10.exe.
+ *
+ * С ЯКОРЯМИ и без хвоста. Прежний шаблон допускал что угодно после расширения,
+ * и имя вида Kladovka-v1.0-old.exe проходило: оно и есть версия 1.0, но в
+ * версию попадало как 1.00 и «10», то есть 100+10 = 110 — и оказывалось
+ * свежее настоящего 1.0. Плюс к тому у таких файлов не было номера версии, и
+ * код подставлял по ним filemtime, то есть по времени заливки: свежий архив
+ * побеждал актуальную сборку всегда.
+ */
+function kladovkaBuildNameRe(string $ext): string
+{
+    return '/^kladovka[-_ ]v(\d+)\.(\d+)\.' . preg_quote($ext, '/') . '$/i';
+}
+
+/**
+ * Сборки заданного расширения в каталоге.
+ *
+ * Правило отбора и подсчёта версии одно и то же для APK и EXE, чтобы
+ * latestExe и latestApk не разошлись: версия берётся из имени как
+ * (major, minor) -> major*100+minor, тем же кодом, что и в index.php
+ * (kladovkaNewestByExt) и download-handler.php (kladovkaLatest).
+ */
+function kladovkaBuildsIn(string $dir, string $ext): array
+{
     // Подкаталога download/ может не быть: без проверки scandir() кидает
     // Warning прямо в вывод, и ответ уезжает с кодом 200 вместо своего.
     if (!is_dir($dir)) {
@@ -1105,7 +1136,7 @@ function kladovkaApksIn(string $dir): array
         if ($entry === '' || $entry[0] === '.') {
             continue;
         }
-        if (!preg_match('/^kladovka[-_ ]v\d+(?:\.\d+)?.*\.apk$/i', $entry)) {
+        if (!preg_match(kladovkaBuildNameRe($ext), $entry)) {
             continue;
         }
         $path = $dir . '/' . $entry;
@@ -1116,41 +1147,92 @@ function kladovkaApksIn(string $dir): array
     return $out;
 }
 
-function latestApk(array $CFG): void {
+/**
+ * Свежая сборка заданного расширения либо null.
+ *
+ * Сортировка по ВЕРСИИ из имени (v1.30 -> 130), а не по дате файла: перезалитый
+ * старый APK не должен снова стать «актуальным».
+ */
+function kladovkaNewestBuild(array $CFG, string $ext): ?array
+{
     $root = rtrim($CFG['root'] ?? dirname(__FILE__), '/');
     $candidates = [];
     foreach ([$root . '/download', $root] as $dir) {
-        foreach (kladovkaApksIn($dir) as $f) {
-            $m = [];
-            // Сортируем по ВЕРСИИ из имени (v1.30 -> 130), а не по дате файла
-            if (preg_match('/Kladovka[-_ ]v(\d+)\.(\d+)\.apk/i', basename($f), $m)) {
-                $candidates[$f] = (int)$m[1] * 100 + (int)$m[2];
-            } else {
-                $candidates[$f] = filemtime($f);
-            }
+        foreach (kladovkaBuildsIn($dir, $ext) as $f) {
+            $candidates[$f] = kladovkaVersionCodeOf($f, $ext);
         }
     }
-    if (!$candidates) { respondError(404, 'APK не найден'); }
-    arsort($candidates);
-    $apk = array_key_first($candidates);
-    $name = basename($apk);
-    $m = [];
-    if (preg_match('/Kladovka[-_ ]v(\d+)\.(\d+)\.apk/i', $name, $m)) {
-        $vn = 'v' . $m[1] . '.' . $m[2];
-        $vc = (int)$m[1] * 100 + (int)$m[2];
-    } else {
-        $vn = $name;
-        $vc = (int)filemtime($apk);
+    if (!$candidates) {
+        return null;
     }
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host   = $_SERVER['HTTP_HOST'] ?? 'kladovka.dr6ter.ru';
-    $rel    = '/' . ltrim(str_replace($root, '', $apk), '/');
-    $url    = $scheme . '://' . $host . $rel;
-    respond(200, [
-        'versionCode' => $vc,
-        'versionName' => $vn,
-        'url'         => $url,
-        'md5'         => md5_file($apk),
-        'size'        => filesize($apk),
-    ]);
+    arsort($candidates);
+    $file = array_key_first($candidates);
+    return [
+        'versionName' => kladovkaVersionNameOf($file, $ext),
+        'versionCode' => (int)$candidates[$file],
+        'url'         => kladovkaPublicUrl($CFG, $file),
+        'md5'         => md5_file($file),
+        'size'        => filesize($file),
+    ];
 }
+
+/**
+ * Версия сборки из её имени: Kladovka-v1.48.apk -> 148, Kladovka-v1.11.exe -> 111.
+ *
+ * Файл с именем не по схеме сюда не попадает: kladovkaBuildsIn() отбирает
+ * строго той же регуляркой, поэтому подставлять «хоть что-нибудь» не нужно и
+ * подставлять нечего. Прежний запасной вариант с filemtime здесь был враньём —
+ * дата заливки ничего не говорит о версии, и архивная сборка, выложенная позже,
+ * объявлялась «свежей».
+ */
+function kladovkaVersionCodeOf(string $path, string $ext): int
+{
+    $m = [];
+    if (preg_match(kladovkaBuildNameRe($ext), basename($path), $m)) {
+        return (int)$m[1] * 100 + (int)$m[2];
+    }
+    return 0;
+}
+
+function kladovkaVersionNameOf(string $path, string $ext): string
+{
+    $m = [];
+    if (preg_match(kladovkaBuildNameRe($ext), basename($path), $m)) {
+        return 'v' . $m[1] . '.' . $m[2];
+    }
+    return basename($path);
+}
+
+/** Публичный URL файла внутри DOCUMENT_ROOT. */
+function kladovkaPublicUrl(array $CFG, string $path): string
+{
+    $root = rtrim($CFG['root'] ?? dirname(__FILE__), '/');
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'kladovka.dr6ter.ru';
+    $rel = '/' . ltrim(str_replace($root, '', $path), '/');
+    return $scheme . '://' . $host . $rel;
+}
+
+function latestApk(array $CFG): void
+{
+    $apk = kladovkaNewestBuild($CFG, 'apk');
+    if ($apk === null) { respondError(404, 'APK не найден'); }
+    respond(200, $apk);
+}
+
+/**
+ * Свежая настольная сборка — для автообновления в EXE.
+ *
+ * Отдельное действие, а не переиспользование latestApk: у десктопа своя
+ * нумерация, и сравнивать его versionCode с кодом Android было бы сравнением
+ * двух несвязанных шкал. Публично, без токена, как и latestApk: человек
+ * должен узнать о новой версии до входа.
+ */
+function latestExe(array $CFG): void
+{
+    $exe = kladovkaNewestBuild($CFG, 'exe');
+    if ($exe === null) { respondError(404, 'EXE не найден'); }
+    respond(200, $exe);
+}
+
+

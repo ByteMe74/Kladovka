@@ -13,6 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import ru.kladovka.data.UpdateChecker
+import ru.kladovka.data.UpdateState
 import ru.kladovka.data.ApiClient
 import ru.kladovka.data.AppSettings
 import ru.kladovka.data.SettingsStore
@@ -23,6 +27,7 @@ import ru.kladovka.ui.MainScreen
 import ru.kladovka.ui.SettingsScreen
 import java.io.File
 import ru.kladovka.ui.SyncScreen
+import ru.kladovka.ui.UpdateDialog
 
 /**
  * Кладовка Desktop — порт Android-приложения на Compose Desktop.
@@ -69,6 +74,10 @@ private fun KladovkaApp(
 ) {
     var showSync by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showUpdate by remember { mutableStateOf(false) }
+    var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Unknown) }
+    val checker = remember { UpdateChecker(api) }
+    val scope = rememberCoroutineScope()
 
     val data by db.data.collectAsState()
 
@@ -104,13 +113,27 @@ private fun KladovkaApp(
         ThemeMode.DARK -> true
     }
 
+    // Проверка обновления — один раз на запуск, молча и в фоне. Ошибка сети здесь
+    // не должна ни показываться, ни мешать: человек звал приложение работать, а
+    // не проверять интернет. Результат всплывёт, когда он сам откроет окно
+    // обновления, поэтому игнорировать пустой результат нельзя — он затирает
+    // «не проверяли» на «не знаю» и человек увидит устаревшее состояние.
+    LaunchedEffect(Unit) {
+        val fresh = checker.check()
+        if (fresh is UpdateState.Available || fresh is UpdateState.UpToDate) {
+            updateState = fresh
+        }
+    }
+
     KladovkaTheme(darkTheme = dark) {
         MainScreen(
             db = db,
             data = data,
             photoDir = File(settings.dataDir, "photos"),
             onOpenSync = { showSync = true },
-            onOpenSettings = { showSettings = true }
+            onOpenSettings = { showSettings = true },
+            updateAvailable = updateState is UpdateState.Available,
+            onOpenUpdate = { showUpdate = true }
         )
 
         if (showSync) {
@@ -129,6 +152,17 @@ private fun KladovkaApp(
                 onChange = onSettings,
                 db = db,
                 onClose = { showSettings = false }
+            )
+        }
+
+        if (showUpdate) {
+            UpdateDialog(
+                state = updateState,
+                onCheck = {
+                    updateState = UpdateState.Checking
+                    scope.launch { updateState = checker.check() }
+                },
+                onClose = { showUpdate = false }
             )
         }
     }

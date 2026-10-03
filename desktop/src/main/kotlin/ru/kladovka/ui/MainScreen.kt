@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -100,7 +101,10 @@ fun MainScreen(
     data: AppData,
     photoDir: File,
     onOpenSync: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    /** Сервер ответил и обновление есть — показываем значок. */
+    updateAvailable: Boolean = false,
+    onOpenUpdate: () -> Unit = {}
 ) {
     var tab by remember { mutableStateOf(Tab.ITEMS) }
     var query by remember { mutableStateOf("") }
@@ -136,6 +140,18 @@ fun MainScreen(
                 actions = {
                     IconButton(onClick = onOpenSync) {
                         Icon(Icons.Default.Sync, contentDescription = "Сервер и синхронизация")
+                    }
+                    // Значок обновления виден не всегда: показываем его, только
+                    // когда сервер ответил и обновление действительно есть.
+                    // Иначе кнопка была бы лишней, а её содержимое — «проверить
+                    // не удалось», что человек не просил.
+                    if (updateAvailable) {
+                        IconButton(onClick = onOpenUpdate) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Доступно обновление"
+                            )
+                        }
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Настройки")

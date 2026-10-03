@@ -63,7 +63,7 @@ function kladovkaNewestByExt(string $ext): array
                 continue;
             }
             $m = [];
-            if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.([A-Za-z0-9]+)$/i', $entry, $m)) {
+            if (!preg_match('/^kladovka[-_ ]v(\d+)\.(\d+)\.([A-Za-z0-9]+)$/i', $entry, $m)) {
                 continue;
             }
             if (strtolower($m[3]) !== $ext || !is_file($dir . '/' . $entry)) {
@@ -103,7 +103,7 @@ foreach ([__DIR__, __DIR__ . '/download'] as $dir) {
         if ($entry === '' || $entry[0] === '.') {
             continue;
         }
-        if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.apk$/i', $entry, $m)) {
+        if (!preg_match('/^kladovka[-_ ]v(\d+)\.(\d+)\.apk$/i', $entry, $m)) {
             continue;
         }
         $minor = (int)($m[2] ?? 0);

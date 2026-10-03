@@ -98,7 +98,7 @@ function kladovkaCollect(array $dirs): array
                 continue;
             }
             $m = [];
-            if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.([A-Za-z0-9]+)$/i', $entry, $m)) {
+            if (!preg_match('/^kladovka[-_ ]v(\d+)\.(\d+)\.([A-Za-z0-9]+)$/i', $entry, $m)) {
                 continue;
             }
             $out[strtolower($m[3])][] = [
@@ -127,10 +127,13 @@ function kladovkaLatest(array $files, string $ext): ?array
     }
     $best = null;
     foreach ($files[$ext] as $f) {
+        // При одинаковой версии решает каталог, а не дата файла: файл мог быть
+        // перезалит в любой момент, и тогда более старый по имени оказывался
+        // «свежее» только потому, что его положили позже. download/ имеет
+        // приоритет — он идёт раньше в kladovkaFiles().
         if ($best === null
             || $f['major'] > $best['major']
-            || ($f['major'] === $best['major'] && $f['minor'] > $best['minor'])
-            || ($f['major'] === $best['major'] && $f['minor'] === $best['minor'] && $f['mtime'] > $best['mtime'])) {
+            || ($f['major'] === $best['major'] && $f['minor'] > $best['minor'])) {
             $best = $f;
         }
     }

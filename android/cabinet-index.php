@@ -37,7 +37,7 @@ foreach ([$webRoot, $webRoot . '/download'] as $dir) {
             continue;
         }
         $m = [];
-        if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.apk$/i', $entry, $m)) {
+        if (!preg_match('/^kladovka[-_ ]v(\d+)\.(\d+)\.apk$/i', $entry, $m)) {
             continue;
         }
         if (!is_file($dir . '/' . $entry)) {

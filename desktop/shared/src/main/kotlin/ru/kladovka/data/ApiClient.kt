@@ -285,23 +285,38 @@ class ApiClient(
         )
     }
 
-    /** Свежая версия, которую отдаёт сервер (`latestApk`). */
+    /**
+     * Свежая версия, которую отдаёт сервер.
+     *
+     * Один класс на обе платформы, но спрашиваем разное действие: `latestApk` —
+     * про телефон, `latestExe` — про эту сборку. Нумерация у них своя (v1.48 у
+     * Android против v1.0 здесь), и сравнивать один код с другим было бы
+     * сравнением двух несвязанных шкал: телефон с версией 1.48 выглядел бы для
+     * десктопа как обновление.
+     */
     data class LatestVersion(
         val versionCode: Int,
         val versionName: String,
         val url: String,
-        val size: Long
+        val size: Long,
+        val md5: String
     )
 
-    suspend fun latestVersion(): LatestVersion? = withContext(Dispatchers.IO) {
+    suspend fun latestVersion(): LatestVersion? = latestOf("latestExe")
+
+    /** То же для Android-сборки — нужно только там, где сверяют версии. */
+    suspend fun latestAndroid(): LatestVersion? = latestOf("latestApk")
+
+    private suspend fun latestOf(action: String): LatestVersion? = withContext(Dispatchers.IO) {
         runCatching {
-            val o = json.parseToJsonElement(apiCall("latestApk", null, null)).jsonObject
+            val o = json.parseToJsonElement(apiCall(action, null, null)).jsonObject
             fun p(k: String) = o[k]?.jsonPrimitive?.content
             LatestVersion(
                 versionCode = p("versionCode")?.toIntOrNull() ?: 0,
                 versionName = p("versionName").orEmpty(),
                 url = p("url").orEmpty(),
-                size = p("size")?.toLongOrNull() ?: 0
+                size = p("size")?.toLongOrNull() ?: 0,
+                md5 = p("md5").orEmpty()
             ).takeIf { it.versionName.isNotBlank() }
         }.getOrNull()
     }
