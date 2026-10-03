@@ -228,16 +228,25 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var syncToken: String? = null
     private var autoSyncJob: kotlinx.coroutines.Job? = null
 
-    fun syncServerUrl(): String =
-        prefs.getString("serverUrl", "https://kladovka.dr6ter.ru") ?: "https://kladovka.dr6ter.ru"
+    /**
+     * Адрес сервера — только этот.
+     *
+     * Раньше он брался из настроек, куда его записывали через скрытое поле в
+     * диалоге. Поле убрали, но чтение из настроек осталось бы: у кого-то в
+     * prefs лежит адрес, введённый до этого, и данные молча уходили бы туда —
+     * вместе с паролем. Поэтому значение в prefs игнорируется, а запись
+     * устаревшей настройки удаляется.
+     */
+    fun syncServerUrl(): String = SERVER_URL
 
     fun syncServerUsername(): String = prefs.getString("serverUsername", "") ?: ""
 
     fun syncServerPassword(): String = prefs.getString("serverPassword", "") ?: ""
 
-    fun saveSyncSettings(url: String, username: String, password: String) {
+    /** Логин и пароль сохраняем, адрес — нет: он теперь один и зашит в клиент. */
+    fun saveSyncSettings(username: String, password: String) {
         prefs.edit()
-            .putString("serverUrl", url.trim().ifEmpty { "https://kladovka.dr6ter.ru" })
+            .remove("serverUrl")
             .putString("serverUsername", username.trim())
             .putString("serverPassword", password)
             .apply()
@@ -638,5 +647,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (syncServerPassword().isNotEmpty()) {
             syncLogin(silent = true)
         }
+    }
+
+    companion object {
+        /** Единственный сервер. Поле ввода адреса убрано из интерфейса. */
+        const val SERVER_URL = "https://kladovka.dr6ter.ru"
     }
 }

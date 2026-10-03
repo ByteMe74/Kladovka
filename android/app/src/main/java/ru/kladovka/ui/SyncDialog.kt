@@ -63,7 +63,10 @@ import java.util.Locale
  */
 @Composable
 fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
-    var url by rememberSaveable { mutableStateOf(vm.syncServerUrl()) }
+    // Адрес сервера больше не настраивается: он зашит в клиент. Раньше здесь
+    // было состояние с адресом из скрытого поля — и старый адрес из настроек
+    // продолжал уходить в сеть вместе с паролем.
+    val url = AppViewModel.SERVER_URL
     var username by rememberSaveable { mutableStateOf(vm.syncServerUsername()) }
     var password by rememberSaveable { mutableStateOf(vm.syncServerPassword()) }
     var showPushConfirm by remember { mutableStateOf(false) }
@@ -229,7 +232,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
 
                 Button(
                     onClick = {
-                        vm.saveSyncSettings(url, username, password)
+                        vm.saveSyncSettings(username, password)
                         vm.syncLogin()
                     },
                     enabled = !busy,
@@ -247,7 +250,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
                             onClick = {
-                                vm.saveSyncSettings(url, username, password)
+                                vm.saveSyncSettings(username, password)
                                 showPushConfirm = true
                             },
                             enabled = synced && !busy,
@@ -265,7 +268,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                         }
                         OutlinedButton(
                             onClick = {
-                                vm.saveSyncSettings(url, username, password)
+                                vm.saveSyncSettings(username, password)
                                 showPullConfirm = true
                             },
                             enabled = synced && !busy,
