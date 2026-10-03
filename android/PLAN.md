@@ -1,176 +1,79 @@
-# План улучшений Kladovka
+# Состояние и план Kladovka
 
-## Анализ текущей архитектуры
+Проверено по коду, а не по намерениям. Подробности по безопасности — в
+[`IMPROVEMENTS.md`](IMPROVEMENTS.md), по сборке десктопа — в
+[`../kladovka-desktop/README.md`](../kladovka-desktop/README.md).
 
-### Android-приложение (Kotlin, Jetpack Compose)
-- **AppViewModel.kt** (589 строк) — главный ViewModel с логикой синхронизации
-- **Repository.kt** — работа с БД Room + сетевые вызовы к серверу
-- **AppDatabase.kt** — Room-схема (Places, Shelves, Polki, Containers, Items)
-- **MainScreen.kt** — главный экран (5 вкладок: Места, Стеллажи, Полки, Контейнеры, Вещи)
-- Экраны редактирования: ItemEditScreen, ContainerEditScreen, PlaceEditScreen, ShelfEditScreen, PolkaEditScreen
-- SyncDialog.kt — диалог синхронизации
+## Что сделано
 
-### Веб-кабинет
-- `C:\Users\Night\kladovka-cabinet\index.php` — базовый PHP-интерфейс
+### Android — `kladovka/`
 
-### Серверная часть
-- `C:\Users\Night\kladovka\api.php` — основной API-файл
-- `C:\Users\Night\kladovka-server-api.php` — версия сервера
-- API-эндпоинты: login, register, import/export, share/unshare, profile, latestApk, upload_photo
+Kotlin, Jetpack Compose, Room-схема версии 5.
 
-### Текущие проблемы
-1. **Скачивание по кнопке** — всегда скачивается один APK, без учёта ОС
-2. **Нет подписи файлов** — дистрибутивы не подписаны
-3. **Windows-приложение отсутствует** — только Android + веб
-4. **Кабинет и Android** — требуют улучшения UI/UX и функциональности
+- `ui/AppViewModel.kt` — ViewModel с логикой синхронизации
+- `data/Repository.kt` — работа с Room + сетевые вызовы
+- `data/AppDatabase.kt`, `data/Daos.kt`, `data/Entities.kt` — схема
+- `ui/MainScreen.kt` — 5 вкладок: Места, Стеллажи, Полки, Контейнеры, Вещи
+- Экраны редактирования всех пяти сущностей, `SyncDialog.kt`
+- `android:usesCleartextTraffic` отключён — приложение ходит только по HTTPS
 
-## Этап 1: Windows-приложение (Tauri + Rust)
+### Desktop — `kladovka-desktop/`
 
-### Архитектура
-```
-kladovka-desktop/
-├── Cargo.toml                    # Зависимости Rust
-├── src/
-│   ├── main.rs                   # Точка входа
-│   ├── lib.rs                    # Библиотека API
-│   └── tauri/
-│       └── capabilities/
-│           └── default.toml
-├── tauri/
-│   ├── tauri.conf.json           # Конфигурация
-│   ├── capabilities/
-│   │   └── default.toml
-│   └── capabilities/
-│       └── default.toml
-├── src-tauri/
-│   ├── build.rs
-│   ├── Cargo.toml
-│   ├── rust-toolchain.toml
-│   ├── entitlements.mac.plist
-│   ├── entitlements.mac.inherit.plist
-│   ├── entitlements.windows.plist
-│   ├── entitlements.windows.inherit.plist
-│   ├── icons/
-│   ├── bundle/
-│   │   ├── windows/
-│   │   │   ├── installer.nsi
-│   │   │   └── AppxManifest.xml
-│   │   └── macos/
-│   │       ├── entitlements.plist
-│   │       └── info.plist
-│   └── src/
-│       ├── main.rs
-│       ├── lib.rs
-│       └── capabilities/
-│           └── default.toml
-├── src/
-│   ├── App.tsx
-│   ├── main.tsx
-│   ├── components/
-│   │   ├── LoginScreen.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── ItemList.tsx
-│   │   ├── ItemEdit.tsx
-│   │   ├── SyncDialog.tsx
-│   │   └── ...
-│   ├── hooks/
-│   │   └── useApi.ts
-│   ├── store/
-│   │   └── index.ts
-│   ├── types/
-│   │   └── index.ts
-│   ├── utils/
-│   │   ├── api.ts
-│   │   ├── crypto.ts
-│   │   └── sign.ts
-│   └── assets/
-│       └── ...
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── .gitignore
-├── README.md
-└── SECURITY.md
-```
+Порт Android-версии на **Compose Desktop**. Первоначальный план (Tauri + Rust +
+React) отменён: общий код на Kotlin даёт паритет с телефоном без написания
+второго UI, а база `kladovka.db` переносится между ПК и телефоном без
+конвертации.
 
-### Функционал
-- Полная синхронизация с сервером
-- Редактирование всех сущностей
-- Совместный учёт
-- Подписка на обновления
-- Подпись кода (электронная)
+- Слой данных (`SqliteDatabase`, `ApiClient`, `Entities`, `Backup`) переписан
+  под реальный SQLite и контракт `api.php`
+- Иконки вкладок, значок приложения, счётчики — перенесены с Android
+- **`gradle singleExe`** → `build\dist\Kladovka.exe`, один самодостаточный
+  файл: Java не нужна ни при сборке у пользователя, ни при запуске
+- Размер: 134,5 → 86,8 МБ (отсечены чужие native-библиотеки sqlite и
+  неиспользуемые material-иконки; обе операции закрыты проверками в сборке)
 
-## Этап 2: Исправление скачивания по кнопке
+### Сервер — `kladovka/api.php`
 
-### Логика выбора дистрибутива
-```javascript
-// Определение ОС
-function getOS() {
-    const ua = navigator.userAgent;
-    if (/Windows/.test(ua)) return 'windows';
-    if (/Macintosh|Mac OS X/.test(ua)) return 'macos';
-    if (/Linux/.test(ua)) return 'linux';
-    if (/Android/.test(ua)) return 'android';
-    return 'windows'; // по умолчанию
-}
+961 строка. Эндпоинты: `login`, `register`, `import`, `export`, `share`,
+`unshare`, `profile`, `latestApk`, `upload_photo`, `logout`, `confirm`.
+Rate-limiting есть для входа и регистрации.
 
-// Маппинг версий
-const VERSIONS = {
-    windows: { exe: 'v1.43', msi: 'v1.43' },
-    macos: { dmg: 'v1.43', zip: 'v1.43' },
-    linux: { deb: 'v1.43', rpm: 'v1.43' },
-    android: { apk: 'v1.43' }
-};
-```
+### Веб — `kladovka/`
 
-## Этап 3: Подпись файлов
+- `landing-index.php` — страница; кнопка «Скачать APK» ведёт прямо на файл
+  `Kladovka-*.apk` (строка 408), то есть всегда отдаёт APK, какой бы ОС ни
+  зашёл
+- `cabinet-index.php` — кабинет
+- `download-handler.php` — умеет определить ОС по User-Agent и отдать свой
+  дистрибутив (`Kladovka-v%s.%s.exe` / `.msi` / `.dmg` / `.apk`), но **нигде
+  не подключён**: во всём репозитории на него нет ни одной ссылки. Лежит
+  мёртвым грузом — кнопка на странице в него не указывает
 
-### Для Windows
-- SignTool (signtool.exe)
-- Использование сертификата с хранилища или файла .pfx
+## Что осталось
 
-### Для macOS
--_codesign
-- Использование сертификата из Keychain
+| # | Что | Почему не сделано |
+|---|---|---|
+| 1 | Сменить пароль админа на сервере | нужен доступ к хосту; см. `IMPROVEMENTS.md` |
+| 2 | Токены с таблицей, сроком жизни и отзывом | правка `api.php`, закрывает и O(n)-проверку токена |
+| 3 | Убрать приём токена из `?token=` / `?api_key=` | остаётся Bearer-заголовок |
+| 4 | Rate-limiting для `import`/`export`/`upload_photo` | сейчас только для входа и регистрации |
+| 5 | Подпись файлов (signtool / codesign / gpg) | нет сертификата |
+| 6 | Автообновление | `ApiClient.latestApk` написан, но UI его не вызывает |
+| 7 | `packageMsi` | не установлен WiX 3 (`light.exe`); `createDistributable` работает |
+| 8 | Подключить `download-handler.php` к кнопке на лендинге | файл готов и определяет ОС, но на него нет ни одной ссылки; пока кнопка всегда отдаёт APK |
 
-### Для Linux
-- gpg --sign
-- Использование GPG-ключа
+## Проверки, встроенные в сборку десктопа
 
-## Этап 4: Улучшение Android-приложения
+- `SingleExe verify` — SHA-256 каждой из 171 записи payload сверяется с
+  исходником после упаковки
+- `checkIcons` — каждая иконка, на которую ссылаются исходники, плюс шесть,
+  которые material3 зовёт изнутри, грузится из готового jar и должна дать
+  непустой вектор
+- `slimUberJar` — падает, если в отжатом jar не нашлась ни одна ожидаемая
+  иконка
+- `:shared:test` — 20 тестов (`SqliteDatabaseTest` + `BackupTest`)
 
-### Обновления
-- Обновление Gradle до актуальной версии
-- Обновление Kotlin до 2.0+
-- Обновление Compose до stable
-- Оптимизация памяти и производительности
+## Не относится к проекту
 
-### UI/UX улучшения
-- Улучшенные анимации
-- Better error handling
-- Accessibility improvements
-
-## Этап 5: Улучшение веб-кабинета
-
-### Обновления
-- Современный дизайн (совместимый с Android)
-- Полная функциональность редактирования
-- Улучшенная безопасность
-- Поддержка offline-режима
-
-## Этап 6: Паритет функций
-
-### Список функций для всех платформ
-- [x] Добавление/редактирование мест
-- [x] Добавление/редактирование стеллажей
-- [x] Добавление/редактирование полок
-- [x] Добавление/редактирование контейнеров
-- [x] Добавление/редактирование вещей
-- [x] Синхронизация с сервером
-- [x] Совместный учёт
-- [x] Бэкап/восстановление
-- [x] Поиск
-- [ ] Подпись кода
-- [ ] Автообновление
-
-## Приступаю к реализации?
+- `/deskforce/` — чужой чекаут RustDesk, лежит в рабочем каталоге. Не трогаем,
+  добавлен в `.gitignore`.
