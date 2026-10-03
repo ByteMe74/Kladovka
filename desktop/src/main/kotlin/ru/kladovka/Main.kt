@@ -20,6 +20,7 @@ import ru.kladovka.data.ThemeMode
 import ru.kladovka.ui.KladovkaTheme
 import ru.kladovka.ui.MainScreen
 import ru.kladovka.ui.SettingsScreen
+import java.io.File
 import ru.kladovka.ui.SyncScreen
 
 /**
@@ -78,6 +79,7 @@ private fun KladovkaApp(
         MainScreen(
             db = db,
             data = data,
+            photoDir = File(settings.dataDir, "photos"),
             onOpenSync = { showSync = true },
             onOpenSettings = { showSettings = true }
         )

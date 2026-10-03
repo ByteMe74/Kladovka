@@ -9,7 +9,18 @@ import java.util.Properties
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val serverUrl: String = ApiClient.DEFAULT_URL,
-    val dataDir: String = ""
+    val dataDir: String = "",
+    /**
+     * Токен авторизации.
+     *
+     * Раньше токен жил только в памяти, и после закрытия диалога «Сервер» его
+     * приходилось вводить заново — на Android пароль лежит в настройках, и
+     * автовход восстанавливает сессию при запуске. Здесь хранится не пароль, а
+     * уже выданный токен; кнопка «Выйти» стирает его, как logout на Android.
+     */
+    val token: String = "",
+    /** Под кем вошли — нужно для списка совместного доступа и профиля. */
+    val username: String = ""
 )
 
 /** Режим темы продублирован здесь, чтобы слой данных не зависел от Compose. */
@@ -27,7 +38,9 @@ object SettingsStore {
             themeMode = runCatching { ThemeMode.valueOf(p.getProperty("themeMode", "SYSTEM")) }
                 .getOrDefault(ThemeMode.SYSTEM),
             serverUrl = p.getProperty("serverUrl", ApiClient.DEFAULT_URL),
-            dataDir = dataDir.toString()
+            dataDir = dataDir.toString(),
+            token = p.getProperty("token", ""),
+            username = p.getProperty("username", "")
         )
     }
 
@@ -35,6 +48,8 @@ object SettingsStore {
         val p = Properties()
         p.setProperty("themeMode", s.themeMode.name)
         p.setProperty("serverUrl", s.serverUrl)
+        p.setProperty("token", s.token)
+        p.setProperty("username", s.username)
         Files.newBufferedWriter(dataDir.resolve("settings.properties")).use { p.store(it, "Кладовка") }
     }
 

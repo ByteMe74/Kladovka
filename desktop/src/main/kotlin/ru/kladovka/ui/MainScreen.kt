@@ -30,6 +30,8 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -49,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ru.kladovka.data.AppData
@@ -57,7 +61,10 @@ import ru.kladovka.data.Item
 import ru.kladovka.data.Place
 import ru.kladovka.data.Polka
 import ru.kladovka.data.Shelf
+import ru.kladovka.data.SortMode
 import ru.kladovka.data.SqliteDatabase
+import ru.kladovka.data.sortedFor
+import java.io.File
 
 /** Вкладки — те же пять, что и на Android. */
 enum class Tab(val title: String) {
@@ -91,19 +98,35 @@ private sealed interface Editor {
 fun MainScreen(
     db: SqliteDatabase,
     data: AppData,
+    photoDir: File,
     onOpenSync: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     var tab by remember { mutableStateOf(Tab.ITEMS) }
     var query by remember { mutableStateOf("") }
     var editor by remember { mutableStateOf<Editor?>(null) }
+    var sortMode by remember { mutableStateOf(SortMode.NAME) }
+    var sortOpen by remember { mutableStateOf(false) }
+    var onlyLast by remember { mutableStateOf(false) }
+    var catFilter by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    val visibleItems = remember(data, query) {
-        if (query.isBlank()) data.items.sortedForList()
-        else data.items.filter {
-            it.name.contains(query, true) || it.category.contains(query, true) ||
-                it.notes.contains(query, true) || data.locationOf(it).contains(query, true)
-        }.sortedForList()
+    // Категории для чипов-фильтров берём из данных, а не из того, что уже отфильтровано,
+    // иначе фильтр нельзя было бы расширить обратно.
+    val allCategories = remember(data) {
+        data.items.map { it.category.trim() }.filter { it.isNotEmpty() }.distinct().sorted()
+    }
+
+    val visibleItems = remember(data, query, sortMode, onlyLast, catFilter) {
+        var list = data.items
+        if (query.isNotBlank()) {
+            list = list.filter {
+                it.name.contains(query, true) || it.category.contains(query, true) ||
+                    it.notes.contains(query, true) || data.locationOf(it).contains(query, true)
+            }
+        }
+        if (onlyLast) list = list.filter { it.quantity <= 1 }
+        if (catFilter.isNotEmpty()) list = list.filter { it.category.trim() in catFilter }
+        list.sortedFor(sortMode)
     }
 
     Scaffold(
@@ -183,8 +206,58 @@ fun MainScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
                 )
 
+                // Фильтры и сортировка — только для вещей и только когда поиск
+                // пуст: при вводе запроса место занимают результаты поиска.
+                if (query.isBlank() && tab == Tab.ITEMS) {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = onlyLast,
+                                onClick = { onlyLast = !onlyLast },
+                                label = { Text("❗ Последние") }
+                            )
+                        }
+                        items(allCategories) { c ->
+                            FilterChip(
+                                selected = c in catFilter,
+                                onClick = {
+                                    catFilter = if (c in catFilter) catFilter - c else catFilter + c
+                                },
+                                label = { Text("$c (${data.items.count { it.category.trim() == c }})") }
+                            )
+                        }
+                        item {
+                            Box {
+                                TextButton(onClick = { sortOpen = true }) {
+                                    Text(if (sortMode == SortMode.NAME) "Сортировка" else sortMode.title)
+                                }
+                                DropdownMenu(expanded = sortOpen, onDismissRequest = { sortOpen = false }) {
+                                    SortMode.entries.forEach { m ->
+                                        DropdownMenuItem(
+                                            text = { Text(if (m == sortMode) "✓ ${m.title}" else m.title) },
+                                            onClick = { sortMode = m; sortOpen = false }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Box(Modifier.fillMaxSize()) {
-                    when (tab) {
+                    // Поиск перекрывает вкладки и ищет по всем сущностям сразу.
+                    // Раньше поле было видно на всех вкладках, но работало только
+                    // на «Вещах»: на остальных выглядело живым и молча ничего
+                    // не делало. Android ищет по всем пяти разделам.
+                    val q = query.trim()
+                    if (q.isNotEmpty()) {
+                        SearchResults(data = data, query = q, onEdit = { editor = it })
+                    } else {
+                        when (tab) {
                         Tab.ITEMS -> ItemsList(db, data, visibleItems, onEdit = { editor = Editor.ItemEdit(it) })
                         Tab.CONTAINERS -> ContainersList(
                             db, data,
@@ -205,6 +278,7 @@ fun MainScreen(
                             onEditContainer = { editor = Editor.ContainerEdit(it) },
                             onOpenItem = { editor = Editor.ItemEdit(it) }
                         )
+                        }
                     }
                 }
             }
@@ -236,6 +310,7 @@ fun MainScreen(
             db = db, data = data,
             item = data.items.firstOrNull { it.id == e.id },
             suggestions = db.categories(),
+            photoDir = photoDir,
             onDismiss = { editor = null }
         )
         null -> Unit
@@ -249,6 +324,114 @@ private fun tabIcon(t: Tab) = when (t) {
     Tab.POLKI -> Icons.Filled.Layers
     Tab.CONTAINERS -> Icons.Filled.Archive
     Tab.ITEMS -> Icons.Filled.Inventory2
+}
+
+// ------------------------------------------------------------------ поиск
+
+private class SearchRow(
+    val key: String,
+    val editor: Editor,
+    val icon: ImageVector,
+    val title: String,
+    val subtitle: String
+)
+
+private class SearchGroup(val title: String, val rows: List<SearchRow>)
+
+/**
+ * Группировка находок по разделам.
+ *
+ * Ищем по всем сущностям сразу, как в Android: раньше десктоп фильтровал только
+ * вещи, хотя поле поиска висело на каждой вкладке. Регистр игнорируем в Kotlin,
+ * а не через SQL LIKE — SQLite сравнивает без учёта регистра только ASCII, и
+ * «м6» не находил «М6».
+ */
+private fun searchGroups(data: AppData, query: String): List<SearchGroup> {
+    val q = query.trim()
+    fun hit(text: String) = text.contains(q, ignoreCase = true)
+
+    val places = data.places.filter { hit(it.name) || hit(it.notes) }.map {
+        SearchRow("place-${it.id}", Editor.PlaceEdit(it.id), Icons.Filled.Place, it.name,
+            coordsText(it) ?: it.notes.ifBlank { "Место" })
+    }
+    val shelves = data.shelves.filter { hit(it.name) || hit(it.notes) }.map {
+        SearchRow("shelf-${it.id}", Editor.ShelfEdit(it.id), Icons.Filled.Layers, it.name,
+            data.placeName(it.placeId) ?: "Без места")
+    }
+    val polki = data.polki.filter { hit(it.name) || hit(it.notes) }.map {
+        val onShelf = it.shelfId?.let { sid -> data.shelves.firstOrNull { s -> s.id == sid }?.name }
+        SearchRow("polka-${it.id}", Editor.PolkaEdit(it.id), Icons.Filled.Layers, it.name,
+            listOfNotNull(onShelf, data.placeName(it.placeId)).joinToString(" · ").ifEmpty { "Без привязки" })
+    }
+    val containers = data.containers.filter { hit(it.name) }.map {
+        SearchRow("container-${it.id}", Editor.ContainerEdit(it.id), Icons.Filled.Archive, it.name,
+            listOfNotNull(data.placeName(it.placeId)).joinToString(" · ").ifEmpty { "Без стеллажа" })
+    }
+    val items = data.items.filter {
+        hit(it.name) || hit(it.category) || hit(it.notes) || hit(data.locationOf(it))
+    }.map {
+        SearchRow("item-${it.id}", Editor.ItemEdit(it.id), Icons.Filled.Inventory2, it.name,
+            "${qtyText(it)} · ${data.locationOf(it)}")
+    }
+
+    return listOf(
+        SearchGroup("Места", places),
+        SearchGroup("Стеллажи", shelves),
+        SearchGroup("Полки", polki),
+        SearchGroup("Контейнеры", containers),
+        SearchGroup("Вещи", items)
+    ).filter { it.rows.isNotEmpty() }
+}
+
+@Composable
+private fun SearchResults(
+    data: AppData,
+    query: String,
+    onEdit: (Editor) -> Unit
+) {
+    val groups = remember(data, query) { searchGroups(data, query) }
+    if (groups.isEmpty()) {
+        EmptyState("Ничего не найдено по запросу «$query»")
+        return
+    }
+    LazyColumn(
+        contentPadding = PaddingValues(12.dp, 4.dp, 12.dp, 96.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        groups.forEach { group ->
+            item(key = "h-${group.title}") {
+                Text(
+                    "${group.title.uppercase()} — ${group.rows.size}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)
+                )
+            }
+            items(group.rows, key = { it.key }) { row ->
+                Card(onClick = { onEdit(row.editor) }, modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            row.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(row.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis)
+                            Text(
+                                row.subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // ------------------------------------------------------------------ списки
@@ -268,6 +451,17 @@ private fun ItemsList(
         contentPadding = PaddingValues(12.dp, 4.dp, 12.dp, 96.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Итог по видимому списку — на Android он над списком, и при фильтрах
+        // считает именно то, что видно, а не всю базу.
+        item(key = "totals") {
+            val pieces = items.size
+            val units = items.sumOf { it.quantity }
+            Text(
+                "Итого: $pieces позиций · $units шт",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         items(items, key = { it.id }) { item ->
             ItemCard(db, data, item, onEdit)
         }
@@ -489,7 +683,28 @@ private fun PlacesList(
                             Icon(Icons.Default.Edit, contentDescription = "Изменить")
                         }
                     }
-                    view.shelves.filter { it.shelf.placeId == place.id }.forEach { su ->
+                    // Сводка по месту — как на Android: сколько внутри стеллажей,
+                    // полок, контейнеров и вещей. Считаем от того, что реально
+                    // показываем в дереве ниже, чтобы цифры не расходились с ним.
+                    val shelvesHere = view.shelves.filter { it.shelf.placeId == place.id }
+                    val shelfIds = shelvesHere.map { it.shelf.id }.toSet()
+                    val containersHere = data.containers.filter {
+                        it.placeId == place.id || it.shelfId in shelfIds
+                    }
+                    val containerIds = containersHere.map { it.id }.toSet()
+                    val itemsHere = data.items.filter {
+                        it.placeId == place.id ||
+                            it.shelfId in shelfIds ||
+                            it.containerId in containerIds
+                    }
+                    Text(
+                        "Стеллажей: ${shelvesHere.size} · Полок: ${data.polki.count { it.placeId == place.id }} · " +
+                            "Контейнеров: ${containersHere.size} · Вещей: ${itemsHere.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                    shelvesHere.forEach { su ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 "🗄 ${su.shelf.name}",

@@ -33,15 +33,19 @@ import ru.kladovka.data.Backup
 import ru.kladovka.data.SqliteDatabase
 import ru.kladovka.data.SyncReport
 import ru.kladovka.data.ThemeMode
+import ru.kladovka.data.UserProfile
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Экран «Сервер»: вход, обмен данными, бэкап в файл.
+ * Экран «Сервер»: вход, обмен данными, бэкап в файл, профиль и совместный доступ.
  *
  * Действия соответствуют боевому api.php: отправка — `import`, загрузка — `export`.
- * Токен хранится в памяти процесса и намеренно не записывается на диск.
+ * Токен хранится в settings.properties рядом с базой — иначе после закрытия этого
+ * окна пришлось бы вводить логин и пароль заново, а на Android сессия
+ * восстанавливается автоматически. Кнопка «Выйти» стирает токен; серверный
+ * `logout` — заглушка, токен у него статистичный и отозвать его нечем.
  */
 @Composable
 fun SyncScreen(
@@ -56,10 +60,28 @@ fun SyncScreen(
     var url by remember { mutableStateOf(api.baseUrl) }
     var password by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
-    var token by remember { mutableStateOf<String?>(null) }
+    var token by remember { mutableStateOf(settings.token.takeIf { it.isNotEmpty() }) }
     var busy by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Не авторизованы") }
     var lastReport by remember { mutableStateOf<SyncReport?>(null) }
+    var profile by remember { mutableStateOf<UserProfile?>(null) }
+    var shareUser by remember { mutableStateOf("") }
+    var given by remember { mutableStateOf<List<String>>(emptyList()) }
+    var received by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // Профиль и списки доступа запрашиваются сразу после входа: на Android они
+    // тянутся при открытии диалога синхронизации, здесь — раз в открытие,
+    // иначе блоки висели бы пустыми до первого ручного действия.
+    LaunchedEffect(token) {
+        val t = token ?: return@LaunchedEffect
+        run {
+            profile = runCatching { api.profile(t) }.getOrNull()
+            runCatching { api.shares(t) }.getOrNull()?.let { (g, r) ->
+                given = g
+                received = r
+            }
+        }
+    }
 
     fun run(block: suspend () -> String) {
         scope.launch {
@@ -116,10 +138,12 @@ fun SyncScreen(
                                 if (u.isEmpty()) {
                                     val t = api.login(p)
                                     token = t
+                                    onSettingsChange(settings.copy(token = t, username = ""))
                                     "Вход выполнен (администратор)"
                                 } else {
                                     val (t, verified) = api.loginUser(u, p)
                                     token = t
+                                    onSettingsChange(settings.copy(token = t, username = u))
                                     if (verified) "Вход выполнен: $u" else "Вход выполнен: $u (почта не подтверждена)"
                                 }
                             }
@@ -134,9 +158,15 @@ fun SyncScreen(
                         onClick = {
                             val t = token ?: return@Button
                             run {
-                                api.push(t, Backup.export(db.data.value))
+                                // Фото уезжают на сервер первыми, в JSON попадают их URL —
+                                // иначе на телефоне остались бы пути от компьютера.
+                                val r = api.push(t, db.data.value, File(settings.dataDir, "photos"))
                                 lastReport = SyncReport(pushed = true)
-                                "Отправлено на сервер: вещей ${db.data.value.items.size}"
+                                buildString {
+                                    append("Отправлено на сервер: вещей ${db.data.value.items.size}")
+                                    if (r.uploadedPhotos > 0) append("; фото загружено: ${r.uploadedPhotos}")
+                                    if (r.failedPhotos > 0) append("; фото не отправилось: ${r.failedPhotos}")
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -155,6 +185,92 @@ fun SyncScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Загрузить с сервера (заменить локальные)") }
+
+                    OutlinedButton(
+                        enabled = !busy,
+                        onClick = {
+                            token = null
+                            profile = null
+                            given = emptyList()
+                            received = emptyList()
+                            onSettingsChange(settings.copy(token = "", username = ""))
+                            status = "Вышли из аккаунта"
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Выйти") }
+
+                    profile?.let { p ->
+                        HorizontalDivider()
+                        Text("Аккаунт", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            p.username.ifBlank { settings.username.ifBlank { "Администратор" } },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (p.email.isNotBlank()) {
+                            Text("Почта: ${p.email}", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text(
+                            if (p.emailVerified) {
+                                "✓ Почта подтверждена"
+                            } else {
+                                "⚠ Почта не подтверждена — перейдите по ссылке из письма"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (p.emailVerified) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            }
+                        )
+                    }
+
+                    HorizontalDivider()
+                    Text("Совместный доступ", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Откройте доступ другому пользователю — и ведите учёт вместе.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    OutlinedTextField(
+                        value = shareUser,
+                        onValueChange = { shareUser = it },
+                        label = { Text("Логин пользователя") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            enabled = !busy && shareUser.isNotBlank(),
+                            onClick = {
+                                val t = token ?: return@OutlinedButton
+                                run {
+                                    val who = shareUser.trim()
+                                    api.share(t, who)
+                                    shareUser = ""
+                                    runCatching { api.shares(t).first }.getOrNull()?.let { given = it }
+                                    "Доступ открыт для $who"
+                                }
+                            }
+                        ) { Text("Дать доступ") }
+                        OutlinedButton(
+                            enabled = !busy && shareUser.isNotBlank(),
+                            onClick = {
+                                val t = token ?: return@OutlinedButton
+                                run {
+                                    val who = shareUser.trim()
+                                    api.unshare(t, who)
+                                    shareUser = ""
+                                    runCatching { api.shares(t).first }.getOrNull()?.let { given = it }
+                                    "Доступ отозван для $who"
+                                }
+                            }
+                        ) { Text("Отозвать") }
+                    }
+                    if (given.isNotEmpty()) {
+                        Text("Доступ дан: ${given.joinToString(", ")}", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (received.isNotEmpty()) {
+                        Text("Доступ от: ${received.joinToString(", ")}", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
 
                 HorizontalDivider()
