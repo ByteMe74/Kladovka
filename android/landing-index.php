@@ -38,6 +38,11 @@ function kladovkaNewestByExt(string $ext): array
 {
     $best = null;
     foreach ([__DIR__, __DIR__ . '/download'] as $dir) {
+        // Подкаталога download/ может не быть: без проверки scandir() кидает
+        // Warning прямо в страницу.
+        if (!is_dir($dir)) {
+            continue;
+        }
         $entries = scandir($dir);
         if ($entries === false) {
             continue;

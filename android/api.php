@@ -980,11 +980,46 @@ switch ($action) {
 
 
 /* ================= latestApk: метаданные свежего APK (публично, без токена) ================= */
+
+/**
+ * Сборки в каталоге.
+ *
+ * Перебор + регулярка вместо glob: glob в PHP регистрозависим на всех
+ * платформах, включая Windows. Шаблон Kladovka-*.apk не находит лежащий рядом
+ * kladovka-v1.2.apk, и latestApk отвечает 404 при полностью рабочей раскладке.
+ */
+function kladovkaApksIn(string $dir): array
+{
+    // Подкаталога download/ может не быть: без проверки scandir() кидает
+    // Warning прямо в вывод, и ответ уезжает с кодом 200 вместо своего.
+    if (!is_dir($dir)) {
+        return [];
+    }
+    $entries = scandir($dir);
+    if ($entries === false) {
+        return [];
+    }
+    $out = [];
+    foreach ($entries as $entry) {
+        if ($entry === '' || $entry[0] === '.') {
+            continue;
+        }
+        if (!preg_match('/^kladovka[-_ ]v\d+(?:\.\d+)?.*\.apk$/i', $entry)) {
+            continue;
+        }
+        $path = $dir . '/' . $entry;
+        if (is_file($path)) {
+            $out[] = $path;
+        }
+    }
+    return $out;
+}
+
 function latestApk(array $CFG): void {
     $root = rtrim($CFG['root'] ?? dirname(__FILE__), '/');
     $candidates = [];
     foreach ([$root . '/download', $root] as $dir) {
-        foreach ((glob($dir . '/Kladovka[-_]v[0-9]*.apk') ?: []) as $f) {
+        foreach (kladovkaApksIn($dir) as $f) {
             $m = [];
             // Сортируем по ВЕРСИИ из имени (v1.30 -> 130), а не по дате файла
             if (preg_match('/Kladovka[-_ ]v(\d+)\.(\d+)\.apk/i', basename($f), $m)) {

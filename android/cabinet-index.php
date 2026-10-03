@@ -9,14 +9,49 @@ $CFG = require __DIR__ . '/../../server-config.php';
 session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
 session_start();
 
-// Актуальная версия APK на сервере — для кнопки «Скачать приложение» в шапке
-$apkLatest = '';
+// Актуальная сборка на сервере — для кнопки «Скачать приложение» в шапке.
+// Каталог верхнего уровня: на сервере кабинет лежит в /cabinet/, а сборки —
+// в корне сайта; рядом с ними может быть и подкаталог download/.
+//
+// Перебор каталога регуляркой, а не glob: glob в PHP регистрозависим на всех
+// платформах, включая Windows, и шаблон Kladovka-*.apk не находит лежащий рядом
+// kladovka-v1.2.apk — кнопка просто не появлялась ни в кабинете, ни в шапке.
+// Версия выбирается из имени как (major, minor), а не по дате файла, и правило
+// обязано совпадать с kladovkaNewestByExt() в landing-index.php и
+// kladovkaLatest() в download-handler.php, иначе ссылки разойдутся версиями.
+$webRoot = dirname(__DIR__);
+$apkHref = '';
 $apkVersion = '';
-$apkGlob = glob(__DIR__ . '/../Kladovka-*.apk');
-if ($apkGlob) {
-    usort($apkGlob, fn($a, $b) => filemtime($b) - filemtime($a));
-    $apkLatest = basename($apkGlob[0]);
-    if (preg_match('/v(\d+\.\d+)/i', $apkLatest, $m)) $apkVersion = $m[1];
+$apkBest = null;
+foreach ([$webRoot, $webRoot . '/download'] as $dir) {
+    $prefix = $dir === $webRoot ? '' : 'download/';
+    $entries = @scandir($dir);
+    if ($entries === false) {
+        continue;
+    }
+    foreach ($entries as $entry) {
+        if ($entry === '' || $entry[0] === '.') {
+            continue;
+        }
+        $m = [];
+        if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.apk$/i', $entry, $m)) {
+            continue;
+        }
+        if (!is_file($dir . '/' . $entry)) {
+            continue;
+        }
+        $major = (int)$m[1];
+        $minor = (int)($m[2] ?? 0);
+        if ($apkBest === null
+            || $major > $apkBest['major']
+            || ($major === $apkBest['major'] && $minor > $apkBest['minor'])) {
+            $apkBest = ['href' => $prefix . $entry, 'major' => $major, 'minor' => $minor];
+        }
+    }
+}
+if ($apkBest !== null) {
+    $apkHref = $apkBest['href'];
+    $apkVersion = $apkBest['major'] . '.' . $apkBest['minor'];
 }
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -559,8 +594,8 @@ code{background:rgba(0,240,255,.05);border:1px solid var(--line);padding:1px 6px
     </div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 16px">
       <a class="btn btn-sm" href="/" title="На главную — сайт Кладовки">🌐 Сайт</a>
-      <?php if ($apkLatest !== ''): ?>
-        <a class="btn btn-sm" href="/<?= $apkLatest ?>" title="Скачать приложение для Android<?= $apkVersion !== '' ? ' (версия ' . $apkVersion . ')' : '' ?>">📱 Приложение<?= $apkVersion !== '' ? ' v' . $apkVersion : '' ?></a>
+      <?php if ($apkHref !== ''): ?>
+        <a class="btn btn-sm" href="/<?= $apkHref ?>" title="Скачать приложение для Android<?= $apkVersion !== '' ? ' (версия ' . $apkVersion . ')' : '' ?>">📱 Приложение<?= $apkVersion !== '' ? ' v' . $apkVersion : '' ?></a>
       <?php endif; ?>
     </div>
 
@@ -692,8 +727,8 @@ code{background:rgba(0,240,255,.05);border:1px solid var(--line);padding:1px 6px
   </a>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <div class="stats" id="totals"></div>
-    <?php if ($apkLatest !== ''): ?>
-      <a class="btn btn-sm" href="/<?= $apkLatest ?>" title="Скачать приложение для Android<?= $apkVersion !== '' ? ' (версия ' . $apkVersion . ')' : '' ?>">📱 Приложение<?= $apkVersion !== '' ? ' v' . $apkVersion : '' ?></a>
+    <?php if ($apkHref !== ''): ?>
+      <a class="btn btn-sm" href="/<?= $apkHref ?>" title="Скачать приложение для Android<?= $apkVersion !== '' ? ' (версия ' . $apkVersion . ')' : '' ?>">📱 Приложение<?= $apkVersion !== '' ? ' v' . $apkVersion : '' ?></a>
     <?php endif; ?>
     <a class="btn btn-sm" href="/cabinet/?logout" title="Выйти и вернуться на сайт">⏻ Выйти</a>
   </div>
