@@ -694,19 +694,21 @@ img { max-width: 100%; height: auto; }
   <p class="section-subtitle">Минималистичный интерфейс, понятная навигация, минимум лишнего.</p>
   <div class="screenshots-wrap" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding:16px 0;">
     <div style="text-align:center;">
-      <img src="/app/screens/01-main.png" alt="Главный экран" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
+      <!-- Скриншоты лежат в /screens/, а не рядом с исходниками Android в /app/:
+     тот закрыт правами 700 и отдаёт 403, из-за чего картинки на сайте были битыми. -->
+    <img src="/screens/01-main.png" alt="Главный экран" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Главный экран</p>
     </div>
     <div style="text-align:center;">
-      <img src="/app/screens/03-item-edit.png" alt="Новая вещь" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
+      <img src="/screens/03-item-edit.png" alt="Новая вещь" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Новая вещь</p>
     </div>
     <div style="text-align:center;">
-      <img src="/app/screens/04-place-edit.png" alt="Новое место" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
+      <img src="/screens/04-place-edit.png" alt="Новое место" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Новое место</p>
     </div>
     <div style="text-align:center;">
-      <img src="/app/screens/02-sync.png" alt="Синхронизация" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
+      <img src="/screens/02-sync.png" alt="Синхронизация" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Синхронизация</p>
     </div>
   </div>
