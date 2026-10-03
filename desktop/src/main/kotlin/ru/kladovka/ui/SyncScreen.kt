@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import ru.kladovka.data.ApiClient
+import ru.kladovka.data.ApiException
 import ru.kladovka.data.AppSettings
 import ru.kladovka.data.Backup
 import ru.kladovka.data.SqliteDatabase
@@ -86,17 +87,49 @@ fun SyncScreen(
         }
     }
 
+    /**
+     * Действие с общим отчётом об ошибке.
+     *
+     * На 401 (вход отозван на сервере) одного сообщения мало: токен больше не
+     * работает, и каждая следующая попытка упрётся в то же самое. Поэтому сессия
+     * сбрасывается, а раз логин с паролем сохранены — выполняется тихий повторный
+     * вход, и действие выполняется заново один раз. Второй отказ той же причины
+     * уже показывается как есть.
+     */
     fun run(block: suspend () -> String) {
-        scope.launch {
-            busy = true
-            try {
-                status = block()
-            } catch (e: Exception) {
-                status = "Ошибка: ${e.message}"
-            } finally {
-                busy = false
+        // Пароль берём из сохранённых настроек, а не из поля ввода: после успешного
+        // входа поле очищается, и тихий повторный вход иначе был бы без пароля.
+        val storedPassword = settings.password
+        fun attempt(retryOnRevoked: Boolean) {
+            scope.launch {
+                busy = true
+                try {
+                    status = block()
+                } catch (e: Exception) {
+                    val revoked = e is ApiException && e.code == 401
+                    if (revoked && retryOnRevoked && storedPassword.isNotEmpty()) {
+                        val fresh = runCatching {
+                            if (settings.username.isEmpty()) api.login(storedPassword)
+                            else api.loginUser(settings.username, storedPassword).first
+                        }.getOrNull()
+                        if (fresh != null) {
+                            token = fresh
+                            onSettingsChange(settings.copy(token = fresh))
+                            attempt(retryOnRevoked = false)
+                            return@launch
+                        }
+                    }
+                    if (revoked) {
+                        token = null
+                        onSettingsChange(settings.copy(token = ""))
+                    }
+                    status = "Ошибка: ${e.message}"
+                } finally {
+                    busy = false
+                }
             }
         }
+        attempt(retryOnRevoked = true)
     }
 
     AlertDialog(

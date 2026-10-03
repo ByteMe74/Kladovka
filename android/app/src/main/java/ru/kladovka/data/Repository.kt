@@ -17,6 +17,16 @@ import java.net.URL
 import java.util.UUID
 import androidx.room.withTransaction
 
+/**
+ * Ошибка API с кодом ответа.
+ *
+ * Тип нужен, чтобы отличить «сессия отозвана» (401) от любой другой ошибки.
+ * Раньше на любой не-2xx приходило «Сервер ответил HTTP 401» — после того, как
+ * выход на сайте стал настоящим отзывом, это означало, что приложение молча
+ * перестаёт синхронизироваться и не говорит человеку почему.
+ */
+class ApiException(val code: Int, message: String) : Exception(message)
+
 class Repository(private val db: AppDatabase, private val appContext: Context) {
 
     val places: Flow<List<Place>> = db.placeDao().observeAll()
@@ -455,11 +465,29 @@ class Repository(private val db: AppDatabase, private val appContext: Context) {
             val code = conn.responseCode
             val stream = if (code in 200..299) conn.inputStream else (conn.errorStream ?: conn.inputStream)
             val body = stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            if (code !in 200..299) throw RuntimeException("Сервер ответил HTTP $code")
+            if (code !in 200..299) {
+                val serverError = runCatching { JSONObject(body).optString("error") }.getOrDefault("")
+                throw ApiException(code, httpMessage(code, serverError))
+            }
             return body
         } finally {
             conn.disconnect()
         }
+    }
+
+    /**
+     * Текст ошибки для показа человеку.
+     *
+     * «Не авторизовано» на 401 — это отозванный или сброшенный вход (например,
+     * пользователь вышел из аккаунта на сайте), а не неверный пароль: для того
+     * сервер отдаёт «Неверный логин или пароль», и его текст мы не трогаем.
+     */
+    private fun httpMessage(code: Int, serverError: String): String = when {
+        code == 401 && serverError.contains("Не авторизовано", ignoreCase = true) ->
+            "Сессия отозвана на сервере — например, вы вышли из аккаунта на сайте. Нажмите «Подключиться к серверу», чтобы войти снова."
+        serverError.isNotEmpty() -> serverError
+        code == 403 -> "Недостаточно прав для этого действия"
+        else -> "Сервер ответил HTTP $code"
     }
 
     /** Вход: для аккаунта — имя пользователя + пароль; пустое имя = вход администратора (только пароль). */
@@ -480,6 +508,20 @@ class Repository(private val db: AppDatabase, private val appContext: Context) {
             throw RuntimeException("Аккаунт не подтверждён: перейдите по ссылке из письма, затем войдите снова")
         }
         token
+    }
+
+    /**
+     * Выход: сервер отзывает вход пользователя, поэтому токен перестаёт работать
+     * и после повторного входа нужно получить новый. Раньше такой функции не было
+     * вовсе — из приложения выйти было нельзя, только закрыть его.
+     *
+     * Ошибку сюда не бросаем намеренно: локальные учётные данные стираются в любом
+     * случае, а сервер их всё равно отозвал (токен статистичный, он был один).
+     */
+    suspend fun serverLogout(rawUrl: String, token: String) = withContext(Dispatchers.IO) {
+        val base = normalizeServerUrl(rawUrl)
+        if (base.isEmpty() || token.isEmpty()) return@withContext
+        runCatching { apiCall("$base/api.php?action=logout", "{}", token) }
     }
 
     /** Регистрация нового аккаунта: логин, пароль, email. Возвращает токен если email уже подтверждён, иначе null. */

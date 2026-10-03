@@ -17,6 +17,15 @@ import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 /**
+ * Ошибка API с кодом ответа.
+ *
+ * Нужен отдельный тип, чтобы отличить отозванный вход (401) от сети и прочих
+ * ошибок: на 401 приложение рвёт сессию и входит заново, молчаливый обход этого
+ * оставлял бы складок на неделю без синхронизации.
+ */
+class ApiException(val code: Int, message: String) : IOException(message)
+
+/**
  * Клиент боевого API (`api.php`).
  *
  * Имена действий сверены с сервером: обмен данными идёт через `import`/`export`
@@ -59,11 +68,32 @@ class ApiClient(
             resp.use {
                 val text = it.body?.string().orEmpty()
                 if (!it.isSuccessful && it.code != 429) {
-                    throw IOException("Сервер ответил ${it.code}")
+                    throw ApiException(it.code, httpMessage(it.code, text))
                 }
                 text
             }
         }
+
+    /**
+     * Текст ошибки для показа человеку.
+     *
+     * Раньше на любой не-2xx приходило «Сервер ответил 401» — а выход из аккаунта
+     * теперь отзывает вход на сервере по-настоящему, так что отозванный токен
+     * перестаёт быть экзотикой. Такое сообщение человек принял бы за поломку.
+     * Сервер на 401 при отозванном токене отдаёт «Не авторизовано», при неверном
+     * пароле — «Неверный логин или пароль», и это различие здесь и ловится.
+     */
+    internal fun httpMessage(code: Int, body: String): String {
+        val serverError = errorOf(body, "")
+        return when {
+            code == 401 && serverError.contains("Не авторизовано", ignoreCase = true) ->
+                "Сессия отозвана на сервере — например, вы вышли из аккаунта на сайте. " +
+                    "Войдите заново: данные приложения при этом не пропадут."
+            serverError.isNotEmpty() -> serverError
+            code == 403 -> "Недостаточно прав для этого действия"
+            else -> "Сервер ответил $code"
+        }
+    }
 
     private fun errorOf(text: String, fallback: String): String = runCatching {
         json.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.content

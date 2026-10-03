@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
@@ -306,6 +307,27 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     }
                     Switch(checked = autoSync, onCheckedChange = { vm.setAutoSync(it) }, enabled = !busy)
                 }
+
+                // ---------- Выход из аккаунта ----------
+                // Кнопки не было вообще: выйти можно было только закрыв приложение.
+                // Теперь сервер отзывает вход по-настоящему, поэтому без неё отозвать
+                // его можно было только на сайте — а на телефоне вход всё равно
+                // оставался, и при следующем запуске тихий автологин заходил обратно.
+                HorizontalDivider()
+                OutlinedButton(
+                    onClick = { vm.syncLogout() },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.Logout, null, Modifier.size(18.dp))
+                    Text("  Выйти из аккаунта")
+                }
+                Text(
+                    "Выход отзывает доступ на сервере и стирает сохранённый пароль с этого телефона. " +
+                        "Данные в приложении остаются на месте. Чтобы вернуться, нажмите «Подключиться к серверу».",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 message?.let { (isError, text) ->
                     Text(

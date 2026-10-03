@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import ru.kladovka.BuildConfig
 import ru.kladovka.data.AppDatabase
+import ru.kladovka.data.ApiException
 import ru.kladovka.data.Item
 import ru.kladovka.data.Repository
 import ru.kladovka.data.Repository.LatestVersion
@@ -279,6 +280,54 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /**
+     * Выход из аккаунта.
+     *
+     * Сервер отзывает вход, а приложение стирает сохранённые логин и пароль: иначе
+     * оно тут же вошло бы обратно — тихий автологин в init делает именно это, если
+     * учётные данные на месте. Смысл выхода в том, чтобы на этом устройстве
+     * больше никто не сидел без вашего ведома.
+     */
+    fun syncLogout(onResult: (Boolean, String) -> Unit = { _, _ -> }) {
+        val token = syncToken
+        syncToken = null
+        _synced.value = false
+        _profile.value = null
+        prefs.edit()
+            .putString("serverUsername", "")
+            .putString("serverPassword", "")
+            .putLong("lastSyncAt", 0L)
+            .apply()
+        _lastSyncAt.value = 0L
+        viewModelScope.launch {
+            if (token != null) repo.serverLogout(syncServerUrl(), token)
+            _syncMessage.value = false to "Вы вышли из аккаунта. Данные на телефоне не тронуты."
+            onResult(true, "Вы вышли из аккаунта")
+        }
+    }
+
+    /**
+     * Сессия отозвана или истекла (сервер ответил 401 «Не авторизовано»).
+     *
+     * Раньше такая ошибка выглядела как «Сервер ответил HTTP 401» и приложение
+     * просто переставало синхронизироваться. Теперь вход рвётся, интерфейс
+     * показывает «не подключено», а раз сохранённые логин с паролем есть —
+     * происходит тихий повторный вход: на следующем автосинке уже всё работает,
+     * и человеку не нужно ничего нажимать.
+     *
+     * Возвращает true, если дело было именно в сессии.
+     */
+    private fun handleSessionLoss(e: Throwable, silent: Boolean): Boolean {
+        if (e !is ApiException || e.code != 401) return false
+        syncToken = null
+        _synced.value = false
+        if (!silent) _syncMessage.value = true to (e.message ?: "Сессия закончилась — войдите снова")
+        if (syncServerUsername().isNotEmpty() || syncServerPassword().isNotEmpty()) {
+            syncLogin(silent = true)
+        }
+        return true
+    }
+
     /** Регистрация нового аккаунта на сервере. */
     fun syncRegister(username: String, password: String, email: String, onResult: (Boolean) -> Unit = {}) {
         viewModelScope.launch {
@@ -474,7 +523,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _lastSyncAt.value = System.currentTimeMillis()
             prefs.edit().putLong("lastSyncAt", _lastSyncAt.value).apply()
         }.onFailure { e ->
-            if (!silent) _syncMessage.value = true to (e.message ?: "Ошибка отправки")
+            if (!handleSessionLoss(e, silent)) {
+                if (!silent) _syncMessage.value = true to (e.message ?: "Ошибка отправки")
+            }
         }
         return result.isSuccess
     }
@@ -505,7 +556,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     onResult(false)
                 }
             }.onFailure { e ->
-                _syncMessage.value = true to (e.message ?: "Ошибка загрузки")
+                if (!handleSessionLoss(e, silent = false)) {
+                    _syncMessage.value = true to (e.message ?: "Ошибка загрузки")
+                }
                 onResult(false)
             }
         }
