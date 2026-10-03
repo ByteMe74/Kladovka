@@ -757,7 +757,7 @@ code{background:rgba(0,240,255,.05);border:1px solid var(--line);padding:1px 6px
   <?php if ($authRole === 'admin'): ?>
   <div class="card">
     <h3>🔑 API-ключ</h3>
-    <p class="hint" style="margin-bottom:12px">Для внешних скриптов и автоматизации (права администратора). Передавайте заголовком <code>Authorization: Bearer &lt;ключ&gt;</code> или параметром <code>?token=</code>.</p>
+    <p class="hint" style="margin-bottom:12px">Для внешних скриптов и автоматизации (права администратора). Ключ передаётся только заголовком <code>Authorization: Bearer &lt;ключ&gt;</code>. В URL он больше не принимается: query-строка попадает в логи веб-сервера, в Referer и в историю браузера.</p>
     <div class="key-row">
       <input type="text" id="apiKey" value="<?= htmlspecialchars($CFG['api_key']) ?>" readonly>
       <button class="btn" id="btnCopyKey">Копировать</button>

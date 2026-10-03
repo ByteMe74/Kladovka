@@ -14,7 +14,8 @@
 //   upload_photo          POST (auth) multipart {photo} -> {url}
 //   logout                GET/POST (auth)              -> {ok} (токены статистичны)
 //
-// Аутентификация: заголовок Authorization: Bearer <token>  ИЛИ  ?token=<token>.
+// Аутентификация: заголовок Authorization: Bearer <token> (или X-Api-Key для
+//   ключа из конфига). Приём токена из query-строки убран — см. $token ниже.
 //   Админ-токен = HMAC(session_secret); API-ключ из конфига = тоже админ.
 //   Пользовательский токен = HMAC(user_id + secret).
 // Защита от перебора: 6 неудачных за 10 мин -> 429. Регистрация: 3 с одного IP за сутки.
@@ -35,7 +36,7 @@ function checkAuth(array $cfg, ?string $token): bool {
 // Возвращает id пользователя по его токену (или null для админ-токена/неверного)
 function userIdForToken(array $cfg, ?string $token): ?int {
     if ($token === null || $token === '') return null;
-    // API-ключ из конфига (заголовок X-Api-Key / ?api_key= / Bearer) — права администратора
+    // API-ключ из конфига (заголовок X-Api-Key или Bearer) — права администратора
     if (hash_equals((string)($cfg['api_key'] ?? ''), $token)) return 0;
     if (hash_equals(issueToken($cfg), $token)) return 0; // 0 = админ
     $pdo = db($cfg);
@@ -199,6 +200,14 @@ function schema(PDO $pdo): void {
         server_id INTEGER NOT NULL,
         PRIMARY KEY (owner_id, type, local_id)
     )");
+    // Счётчики частоты тяжёлых запросов. В SQLite, а не в json-файле как у
+    // ограничителя входа: несколько php-fpm воркеров должны видеть общий счёт,
+    // иначе лимит обходится параллельными запросами.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS rate_hits (
+        k TEXT NOT NULL,
+        ts INTEGER NOT NULL
+    )");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_rate_hits ON rate_hits(k, ts)");
 }
 
 function respond(int $code, $payload): void {
@@ -373,6 +382,39 @@ function recordRegistration(array $cfg, string $ip): void {
     file_put_contents($f, json_encode($j), LOCK_EX);
 }
 
+// ---------- Ограничение частоты тяжёлых запросов ----------
+// Считаем по id пользователя, а не по IP. По IP телефон и кабинет одного
+// человека наказывали бы друг друга, а один и тот же пользователь, сменив сеть,
+// лимит бы обошёл. Счётчики общие для всех воркеров (см. rate_hits в схеме).
+
+/** Сколько запросов ещё можно: >0 — можно, <=0 — пора отвечать 429. */
+function rateLeft(PDO $pdo, string $key, int $max, int $window): int {
+    $since = time() - $window;
+    // Подрезаем протухшее, иначе таблица растёт без ограничений
+    $pdo->prepare('DELETE FROM rate_hits WHERE ts < :since')->execute([':since' => $since]);
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM rate_hits WHERE k = :k AND ts >= :since');
+    $stmt->execute([':k' => $key, ':since' => $since]);
+    return $max - (int)$stmt->fetchColumn();
+}
+
+/**
+ * Проверяет лимит и сразу записывает попытку, если он не исчерпан.
+ * Проверка и запись идут вместе: иначе N параллельных запросов успевают
+ * прочитать «есть запас» и все пройти.
+ */
+function rateGuard(PDO $pdo, string $key, int $max, int $window, string $what): void {
+    if (rateLeft($pdo, $key, $max, $window) <= 0) {
+        respondError(429, 'Слишком часто: ' . $what . '. Повторите через минуту.');
+    }
+    $pdo->prepare('INSERT INTO rate_hits (k, ts) VALUES (:k, :ts)')->execute([':k' => $key, ':ts' => time()]);
+}
+
+/** Лимит из конфига, с запасным значением — чтобы сервер можно было настроить без правки кода. */
+function rateLimit(array $cfg, string $name, int $default): int {
+    $v = (int)($cfg[$name] ?? $default);
+    return $v > 0 ? $v : $default;
+}
+
 // ---------- Нормализация и upsert ----------
 function normalize(string $table, array $data, array $fields): array {
     $out = [];
@@ -454,12 +496,15 @@ $FIELDS = [
 ];
 
 $action = $_GET['action'] ?? '';
+// Токен принимается только заголовком — Authorization: Bearer, либо X-Api-Key
+// для ключа из конфига. Приём из query-строки (?token=, ?api_key=) и из тела POST
+// убран: токен в URL попадает в логи веб-сервера, в Referer при загрузке
+// ресурсов и в историю браузера, то есть утекает дальше, чем нужно.
+// Все клиенты — телефон, десктоп, кабинет и скрипты sync-test — уже шлют Bearer.
 $token = (function () {
     $h = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (str_starts_with($h, 'Bearer ')) return substr($h, 7);
-    $k = $_SERVER['HTTP_X_API_KEY'] ?? '';
-    if ($k !== '') return $k;
-    return $_GET['token'] ?? ($_GET['api_key'] ?? ($_POST['api_key'] ?? ''));
+    return $_SERVER['HTTP_X_API_KEY'] ?? '';
 })();
 
 $pdo = db($CFG);
@@ -617,6 +662,11 @@ switch ($action) {
     case 'list': {
         requireAuth($CFG, $token);
         $uid = userIdForToken($CFG, $token);
+        // list дёшев и вызывается на каждом открытии экрана — ограничиваем
+        // только выгрузку, она выгружает всю базу целиком.
+        if ($action === 'export') {
+            rateGuard($pdo, 'export:' . $uid, rateLimit($CFG, 'rate_export', 60), 60, 'выгрузка данных');
+        }
         $visible = visibleOwnerIds($pdo, $uid);
         $out = [];
         foreach (['places','shelves','polki','containers','items'] as $t) {
@@ -629,6 +679,7 @@ switch ($action) {
     case 'import': {
         requireAuth($CFG, $token);
         $uid = userIdForToken($CFG, $token);
+        rateGuard($pdo, 'import:' . $uid, rateLimit($CFG, 'rate_import', 30), 60, 'загрузка данных');
         $in = readInput();
         $data = $in['json'] ?? null;
         if (is_string($data)) $data = json_decode($data, true);
@@ -834,6 +885,7 @@ switch ($action) {
     case 'upload_photo': {
         requireAuth($CFG, $token);
         $uid = userIdForToken($CFG, $token);
+        rateGuard($pdo, 'photo:' . $uid, rateLimit($CFG, 'rate_photo', 30), 60, 'загрузка фото');
 
         if (empty($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
             respondError(400, 'Файл не загружен');
