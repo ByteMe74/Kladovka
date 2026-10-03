@@ -17,4 +17,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "KladovkaDesktop"
+
+// Слой данных (SQLite + API). UI лежит в корневом модуле.
 include(":shared")
