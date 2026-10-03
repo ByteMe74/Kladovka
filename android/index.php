@@ -85,6 +85,35 @@ $apkNewest = kladovkaNewestByExt('apk');
 $apkLatest = $apkNewest['rel'];
 $apkVersion = $apkLatest !== '' ? $apkNewest['major'] . '.' . $apkNewest['minor'] : '';
 
+// Есть ли в каталоге APK старее самой свежей? Пока такие лежат, на странице
+// висит предупреждение: версия 1.47 подписана новым ключом, ключ от 1.46
+// утерян, и Android не поставит 1.47 поверх 1.46. Старые файлы уберут с
+// сервера — тогда предупреждение исчезнет само, без правки кода.
+$apkOldHref = '';
+foreach ([__DIR__, __DIR__ . '/download'] as $dir) {
+    if (!is_dir($dir)) {
+        continue;
+    }
+    $entries = scandir($dir);
+    if ($entries === false) {
+        continue;
+    }
+    foreach ($entries as $entry) {
+        $m = [];
+        if ($entry === '' || $entry[0] === '.') {
+            continue;
+        }
+        if (!preg_match('/^kladovka[-_ ]v(\d+)(?:\.(\d+))?.*\.apk$/i', $entry, $m)) {
+            continue;
+        }
+        $minor = (int)($m[2] ?? 0);
+        if ((int)$m[1] < $apkNewest['major']
+            || ((int)$m[1] === $apkNewest['major'] && $minor < $apkNewest['minor'])) {
+            $apkOldHref = $entry;
+        }
+    }
+}
+
 // Настольная сборка необязательна: на сервере её может не быть. Тогда
 // download-handler.php отдаст посетителю APK и честно сообщит об этом
 // заголовком X-Kladovka-Served.
@@ -622,12 +651,34 @@ img { max-width: 100%; height: auto; }
   <p class="section-subtitle">Три шага до полноценного складского учёта.</p>
   <div class="features-grid" style="max-width:800px; margin:0 auto;">
     <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--primary); font-weight:900;">1</div><h3>Установите сервер</h3><p>Скачайте <code>api.php</code>, положите на хостинг с PHP 8+ и SQLite. Откройте в браузере — приложение готово.</p></div>
-    <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--accent); font-weight:900;">2</div><h3>Установите приложение</h3><p>Скачайте APK и поставьте на Android, либо EXE на компьютер. Введите адрес сервера, логин и пароль — войдите.</p></div>
+    <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--accent); font-weight:900;">2</div><h3>Установите приложение</h3><p>Скачайте APK и поставьте на Android, либо EXE на компьютер. Введите логин и пароль — войдите.</p></div>
     <div class="feature-card" style="text-align:center;"><div class="feature-icon" style="font-size:42px; color:var(--ok); font-weight:900;">3</div><h3>Начните учёт</h3><p>Добавляйте места, стеллажи, полки, контейнеры и вещи. Фотографируйте, синхронизируйте, делитесь.</p></div>
   </div>
   <p style="text-align:center; margin-top:24px;">
     <a href="/download-handler.php" class="btn btn-primary btn-sm">Скачать под мою систему</a>
   </p>
+
+  <!-- Предупреждение для тех, у кого уже стоит 1.46. Показывается, пока на
+       сервере лежит Kladovka-v1.46.apk: версии сменили подпись, и Android
+       не поставит 1.47 поверх 1.46 — подписи разные, система отклонит
+       установку. Старый APK удалят с сервера, и блок уберут вместе с ним. -->
+  <?php if ($apkOldHref !== ''): ?>
+  <div style="max-width:760px; margin:24px auto 0; padding:18px 20px; border-radius:14px;
+              border:1px solid rgba(251,191,36,.35); background:rgba(251,191,36,.07);">
+    <div style="color:var(--amber); font-weight:700; margin-bottom:8px;">⚠️ У вас стоит версия 1.46 — обновить её поверх не получится</div>
+    <p style="margin:0 0 10px; color:var(--muted); font-size:.92rem; line-height:1.55;">
+      Мы сменили ключ подписи приложения, поэтому Android не разрешит обновление поверх
+      установленной версии. Старые данные лежат только на вашем телефоне, поэтому
+      <strong style="color:var(--text);">сначала выгрузите их</strong>, иначе они пропадут при удалении.
+    </p>
+    <ol style="margin:0; padding-left:20px; color:var(--muted); font-size:.92rem; line-height:1.7;">
+      <li>Откройте «Экспорт (бэкап)» и сохраните файл — лучше в облако, а не только в память телефона.</li>
+      <li>Удалите старую версию приложения.</li>
+      <li>Скачайте и установите новую версию.</li>
+      <li>«Импорт (восстановить)» — верните данные из файла.</li>
+    </ol>
+  </div>
+  <?php endif; ?>
   <p style="text-align:center; color:var(--muted); margin-top:14px; font-size:.9rem;">
     Работаете за компьютером? <?php if ($cabAuthed): ?>
     <a href="/cabinet/" class="btn btn-ghost btn-sm" style="margin-left:4px;">Открыть кабинет</a>
