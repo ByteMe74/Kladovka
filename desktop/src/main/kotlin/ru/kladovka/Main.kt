@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -36,6 +37,10 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "Кладовка",
+        // Без этого параметра окно показывает дефолтный значок Windows:
+        // у окна свой значок, не тот, что вшит в Kladovka.exe (окно принадлежит
+        // порождённому java.exe, а не самой заглушке). См. stageAppIcon.
+        icon = painterResource("kladovka-256.png"),
         state = rememberWindowState(size = DpSize(1180.dp, 820.dp))
     ) {
         KladovkaApp(

@@ -61,6 +61,32 @@ kotlin {
     jvmToolchain(21)
 }
 
+/**
+ * Значок окна при запуске.
+ *
+ * File в проводнике и значок в окне — это два разных места. В Explorer
+ * показывается иконка `Kladovka.exe`, она вшита в ресурсы заглушки через
+ * llvm-rc. А само окно создаёт не заглушка, а порождённый ею `java.exe`, и
+ * у окна свой значок — тот, что задан через `Window(icon = ...)`. Без него
+ * Windows рисует дефолтный, и на панели задач висит не Кладовка.
+ *
+ * Источник один — `icons/kladovka-256.png`, его пишет `tools/IconGen.java`.
+ * Копия в src/main/resources не заводится осознанно: IconGen перезаписывает
+ * icons/, а вторая копия молча разошлась бы с тем, что вшито в .rc.
+ */
+val appIconDir = layout.buildDirectory.dir("generated/app-icon")
+
+val stageAppIcon by tasks.registering(Copy::class) {
+    group = "build"
+    description = "Кладёт значок приложения в classpath для Window(icon = ...)"
+    from(layout.projectDirectory.file("icons/kladovka-256.png"))
+    into(appIconDir)
+}
+
+sourceSets["main"].resources.srcDir(appIconDir)
+
+tasks.named("processResources") { dependsOn(stageAppIcon) }
+
 // ================================================================= Единый .exe
 //
 // Собирает один файл Kladovka.exe: заглушка из Rust с иконкой приложения,
