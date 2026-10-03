@@ -10,7 +10,10 @@ declare(strict_types=1);
 // Сжатие страницы (gzip), если клиент поддерживает — быстрее загрузка
 if (function_exists('ob_gzhandler') && !ob_start('ob_gzhandler')) ob_start();
 
-session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
+// Параметры ровно такие же, как в cabinet/index.php. Раньше тут не было
+// 'secure', а в кабинете было: одна и та же сессия ставилась двумя разными
+// cookie, и при выходе из аккаунта лендинг мог показать старое состояние.
+session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
 session_start();
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

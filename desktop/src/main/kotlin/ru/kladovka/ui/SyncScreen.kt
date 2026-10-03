@@ -57,9 +57,12 @@ fun SyncScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    var url by remember { mutableStateOf(api.baseUrl) }
-    var password by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
+    // Адрес сервера больше не настраивается: используется зашитый в клиент.
+    val url = ApiClient.DEFAULT_URL
+    // Поля предзаполнены сохранёнными учётными данными: пароль нужен для тихого
+    // автологина при следующем запуске, как в Android-приложении.
+    var password by remember { mutableStateOf(settings.password) }
+    var username by remember { mutableStateOf(settings.username) }
     var token by remember { mutableStateOf(settings.token.takeIf { it.isNotEmpty() }) }
     var busy by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Не авторизованы") }
@@ -104,12 +107,13 @@ fun SyncScreen(
                 Modifier.verticalScroll(rememberScrollState()).heightIn(max = 520.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it; api.baseUrl = it; onSettingsChange(settings.copy(serverUrl = it)) },
-                    label = { Text("Адрес сервера") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                // Адрес сервера убран: сервер один и он зашит в приложение.
+                // Поле давало человеку вписать любой адрес — и ошибиться, и увести
+                // свои данные и пароль на посторонний хост одним опечаткой.
+                Text(
+                    "Сервер: ${ApiClient.DEFAULT_URL}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 if (token == null) {
@@ -138,12 +142,12 @@ fun SyncScreen(
                                 if (u.isEmpty()) {
                                     val t = api.login(p)
                                     token = t
-                                    onSettingsChange(settings.copy(token = t, username = ""))
+                                    onSettingsChange(settings.copy(token = t, username = "", password = p))
                                     "Вход выполнен (администратор)"
                                 } else {
                                     val (t, verified) = api.loginUser(u, p)
                                     token = t
-                                    onSettingsChange(settings.copy(token = t, username = u))
+                                    onSettingsChange(settings.copy(token = t, username = u, password = p))
                                     if (verified) "Вход выполнен: $u" else "Вход выполнен: $u (почта не подтверждена)"
                                 }
                             }
@@ -193,7 +197,7 @@ fun SyncScreen(
                             profile = null
                             given = emptyList()
                             received = emptyList()
-                            onSettingsChange(settings.copy(token = "", username = ""))
+                            onSettingsChange(settings.copy(token = "", username = "", password = ""))
                             status = "Вышли из аккаунта"
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -326,7 +330,7 @@ fun SyncScreen(
     )
 }
 
-/** Настройки приложения: тема, адрес сервера, каталог данных. */
+/** Настройки приложения: тема и сведения о каталоге данных. */
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
@@ -334,7 +338,6 @@ fun SettingsScreen(
     db: SqliteDatabase,
     onClose: () -> Unit
 ) {
-    var url by remember { mutableStateOf(settings.serverUrl) }
 
     AlertDialog(
         onDismissRequest = onClose,
@@ -360,14 +363,6 @@ fun SettingsScreen(
                         )
                     }
                 }
-
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    label = { Text("Адрес сервера") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
 
                 HorizontalDivider()
 
@@ -395,7 +390,7 @@ fun SettingsScreen(
         },
         confirmButton = {
             TextButton(onClick = {
-                onChange(settings.copy(serverUrl = url.trim()))
+                onChange(settings)
                 onClose()
             }) { Text("Сохранить") }
         },

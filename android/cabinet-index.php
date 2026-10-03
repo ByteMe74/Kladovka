@@ -105,7 +105,9 @@ if (is_array($flash)) {
 
 // ---------- выход ----------
 if (isset($_GET['logout'])) {
-    // Отзываем API-токен на сервере (best-effort; токены истекают сами через 30 дней)
+    // Отзываем API-токен на сервере. Раньше здесь стоял best-effort, потому что
+    // api.php на logout просто отвечал ok и ничего не отзывал: выход из кабинета
+    // стирал сессию в браузере, но доступ к API оставался выданным навсегда.
     if (!empty($_SESSION['kl_auth']['token'])) {
         klApi($apiUrl . '?action=logout', [], (string)$_SESSION['kl_auth']['token']);
     }

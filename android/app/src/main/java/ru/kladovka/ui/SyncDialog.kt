@@ -93,9 +93,6 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
     val profile by vm.profile.collectAsStateWithLifecycle()
     val downloadContext = LocalContext.current
 
-    // Поле «Адрес сервера» скрыто по умолчанию — клиенту менять его не нужно.
-    // Показываем только тем, кто знает, что делает.
-    var showServerUrl by rememberSaveable { mutableStateOf(false) }
     // Регистрация нового аккаунта
     var showRegister by remember { mutableStateOf(false) }
     var regUsername by remember { mutableStateOf("") }
@@ -220,27 +217,14 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
                 )
-                // Ссылка «Изменить адрес сервера» — скрыта по умолчанию
-                TextButton(
-                    onClick = { showServerUrl = !showServerUrl },
-                    enabled = !busy
-                ) {
-                    Text(
-                        if (showServerUrl) "Скрыть адрес сервера" else "Изменить адрес сервера",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                if (showServerUrl) {
-                    OutlinedTextField(
-                        value = url,
-                        onValueChange = { url = it },
-                        label = { Text("Адрес сервера") },
-                        singleLine = true,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                // Адрес сервера убран из UI: сервер один и он зашит в приложение. Поле
+                // давало человеку вписать любой адрес — и ошибиться, и увести свои
+                // данные и пароль на посторонний хост одной опечаткой.
+                Text(
+                    "Сервер: $url",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 Button(
                     onClick = {

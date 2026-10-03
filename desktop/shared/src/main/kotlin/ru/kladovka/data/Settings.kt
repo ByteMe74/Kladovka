@@ -13,14 +13,21 @@ data class AppSettings(
     /**
      * Токен авторизации.
      *
-     * Раньше токен жил только в памяти, и после закрытия диалога «Сервер» его
-     * приходилось вводить заново — на Android пароль лежит в настройках, и
-     * автовход восстанавливает сессию при запуске. Здесь хранится не пароль, а
-     * уже выданный токен; кнопка «Выйти» стирает его, как logout на Android.
+     * Хранится, чтобы сессия переживала перезапуск без лишнего входа. Но токен
+     * сервер может отозвать в любой момент — в том числе при выходе на сайте, —
+     * и тогда одних его данных мало: нужен пароль, чтобы получить новый.
      */
     val token: String = "",
     /** Под кем вошли — нужно для списка совместного доступа и профиля. */
-    val username: String = ""
+    val username: String = "",
+    /**
+     * Пароль от сервера — как в Android-приложении, где он тоже лежит в
+     * SharedPreferences и используется для тихого автологина при запуске.
+     * Без него после отзыва токена пришлось бы вводить пароль заново.
+     * Файл настроек лежит рядом с базой в каталоге пользователя; это пароль
+     * от собственного сервера пользователя, не от стороннего сервиса.
+     */
+    val password: String = ""
 )
 
 /** Режим темы продублирован здесь, чтобы слой данных не зависел от Compose. */
@@ -40,7 +47,8 @@ object SettingsStore {
             serverUrl = p.getProperty("serverUrl", ApiClient.DEFAULT_URL),
             dataDir = dataDir.toString(),
             token = p.getProperty("token", ""),
-            username = p.getProperty("username", "")
+            username = p.getProperty("username", ""),
+            password = p.getProperty("password", "")
         )
     }
 
@@ -50,6 +58,7 @@ object SettingsStore {
         p.setProperty("serverUrl", s.serverUrl)
         p.setProperty("token", s.token)
         p.setProperty("username", s.username)
+        p.setProperty("password", s.password)
         Files.newBufferedWriter(dataDir.resolve("settings.properties")).use { p.store(it, "Кладовка") }
     }
 

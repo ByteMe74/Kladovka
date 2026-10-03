@@ -1,6 +1,7 @@
 package ru.kladovka
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +34,10 @@ fun main() = application {
     val db = remember { SqliteDatabase(dataDir.resolve("kladovka.db")) }
     val api = remember { ApiClient() }
     var settings by remember { mutableStateOf(SettingsStore.load(dataDir)) }
-    api.baseUrl = settings.serverUrl
+    // Адрес сервера больше не настраивается: он зашит в клиент. Значение из
+    // старых настроек игнорируем, иначе у кого-то остался бы адрес, введённый
+    // до удаления поля, и данные уходили бы туда.
+    api.baseUrl = ApiClient.DEFAULT_URL
 
     Window(
         onCloseRequest = ::exitApplication,
@@ -51,7 +55,6 @@ fun main() = application {
             onSettings = { updated ->
                 settings = updated
                 SettingsStore.save(dataDir, updated)
-                api.baseUrl = updated.serverUrl
             }
         )
     }
@@ -68,6 +71,32 @@ private fun KladovkaApp(
     var showSettings by remember { mutableStateOf(false) }
 
     val data by db.data.collectAsState()
+
+    // Тихий автологин при запуске — как на Android (AppViewModel вызывает
+    // syncLogin(silent = true) в init). Там хранится логин с паролем, и токен
+    // каждый раз берётся заново; здесь токен кэшируется, но сервер может его
+    // отозвать в любой момент — в том числе при выходе из аккаунта на сайте.
+    // Без автологина после этого пользователь был бы заперт: токен мёртв, а
+    // пароль уже негде взять.
+    var autoLoginTried by remember { mutableStateOf(false) }
+    LaunchedEffect(settings.username, settings.password, settings.token) {
+        if (autoLoginTried) return@LaunchedEffect
+        if (settings.token.isNotEmpty()) {
+            autoLoginTried = true
+            return@LaunchedEffect
+        }
+        if (settings.username.isEmpty() && settings.password.isEmpty()) {
+            autoLoginTried = true
+            return@LaunchedEffect
+        }
+        autoLoginTried = true
+        val u = settings.username
+        val p = settings.password
+        val token = runCatching {
+            if (u.isEmpty()) api.login(p) else api.loginUser(u, p).first
+        }.getOrNull()
+        if (token != null) onSettings(settings.copy(token = token))
+    }
 
     val dark = when (settings.themeMode) {
         ThemeMode.SYSTEM -> null

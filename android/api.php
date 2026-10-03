@@ -39,13 +39,45 @@ function userIdForToken(array $cfg, ?string $token): ?int {
     // API-ключ из конфига (заголовок X-Api-Key или Bearer) — права администратора
     if (hash_equals((string)($cfg['api_key'] ?? ''), $token)) return 0;
     if (hash_equals(issueToken($cfg), $token)) return 0; // 0 = админ
+    // Отозванные после выхода из аккаунта: токен статистичный, поэтому иначе он
+    // продолжал бы работать вечно. Выход обязан быть настоящим, иначе «вышел»
+    // означает «сессия в браузере стёрта, а доступ всё ещё выдан».
+    $revoked = revoked_user_ids($cfg);
     $pdo = db($cfg);
     $stmt = $pdo->prepare('SELECT id FROM users LIMIT 1000');
     $stmt->execute();
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (hash_equals(issueUserToken($cfg, (int)$row['id']), $token)) return (int)$row['id'];
+        $id = (int)$row['id'];
+        if (isset($revoked[$id])) continue;
+        if (hash_equals(issueUserToken($cfg, $id), $token)) return $id;
     }
     return null;
+}
+
+/** id пользователей, чей вход отозван. Админ (0) здесь не бывает и не отзывается. */
+function revoked_user_ids(array $cfg): array {
+    try {
+        $rows = db($cfg)->query('SELECT user_id FROM revoked_users')->fetchAll(PDO::FETCH_COLUMN);
+    } catch (Throwable) {
+        return []; // таблицы ещё нет — запрос до первой миграции
+    }
+    $out = [];
+    foreach ($rows as $r) $out[(int)$r] = true;
+    return $out;
+}
+
+/** Отозвать вход пользователя (выход из аккаунта). */
+function revoke_user(PDO $pdo, int $userId): void {
+    if ($userId <= 0) return; // админа отозвать нельзя
+    $stmt = $pdo->prepare('INSERT OR REPLACE INTO revoked_users (user_id, at) VALUES (:id, :at)');
+    $stmt->execute([':id' => $userId, ':at' => time()]);
+}
+
+/** Снять отзыв: новый вход снова выдаёт рабочий токен. */
+function unrevoke_user(PDO $pdo, int $userId): void {
+    if ($userId <= 0) return;
+    $stmt = $pdo->prepare('DELETE FROM revoked_users WHERE user_id = :id');
+    $stmt->execute([':id' => $userId]);
 }
 
 // ---------- Отправка письма с подтверждением почты ----------
@@ -199,6 +231,13 @@ function schema(PDO $pdo): void {
         local_id INTEGER NOT NULL,
         server_id INTEGER NOT NULL,
         PRIMARY KEY (owner_id, type, local_id)
+    )");
+    // Отозванные входы: пользователь вышел из аккаунта, и его токен больше не
+    // должен работать. Токен статистичный, поэтому отзываем вход целиком, а при
+    // новом входе запись снимается.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS revoked_users (
+        user_id INTEGER PRIMARY KEY,
+        at INTEGER NOT NULL DEFAULT 0
     )");
     // Счётчики частоты тяжёлых запросов. В SQLite, а не в json-файле как у
     // ограничителя входа: несколько php-fpm воркеров должны видеть общий счёт,
@@ -534,6 +573,9 @@ switch ($action) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($user !== false && password_verify($pw, $user['password_hash'])) {
                 clearFails($CFG, $ip);
+                // Новый вход снимает отзыв: иначе после выхода вернуться
+                // было бы невозможно.
+                unrevoke_user(db($CFG), (int)$user['id']);
                 respond(200, [
                     'token' => issueUserToken($CFG, (int)$user['id']),
                     'role' => 'user',
@@ -644,6 +686,7 @@ switch ($action) {
                     session_start();
                 }
                 session_regenerate_id(true);
+                unrevoke_user(db($CFG), (int)$user['id']);
                 $_SESSION['kl_auth'] = [
                     'token' => issueUserToken($CFG, (int)$user['id']),
                     'role' => 'user',
@@ -878,7 +921,13 @@ switch ($action) {
     }
 
     case 'logout': {
-        // Токены статистичны — отзывать нечего, просто подтверждаем выход
+        // Отзыв настоящий: показывать «вышли», ничего не отозвав — значит оставить
+        // человеку действующий доступ к API навсегда. Токен статистичный, поэтому
+        // отзываем вход пользователя целиком (у него он один).
+        $uid = userIdForToken($CFG, $token);
+        if ($uid !== null) {
+            revoke_user(db($CFG), $uid);
+        }
         respond(200, ['ok' => true]);
     }
 

@@ -51,19 +51,33 @@ class SettingsAndSortingTest {
     }
 
     @Test
-    fun `выход стирает токен`() {
+    fun `пароль сохраняется ради тихого автологина`() {
+        // Как в Android-приложении: там пароль тоже лежит в настройках и по нему
+        // делается syncLogin при каждом запуске. Без него после отзыва токена
+        // сервером восстановиться нечем.
         SettingsStore.save(
             dir,
-            AppSettings(dataDir = dir.toString(), token = "токен", username = "vasya")
+            AppSettings(dataDir = dir.toString(), token = "t", username = "vasya", password = "секретный")
         )
-        // Ровно то, что делает кнопка «Выйти»: сохраняем настройки с пустым токеном.
+        assertEquals("секретный", SettingsStore.load(dir).password)
+    }
+
+    @Test
+    fun `выход стирает и токен, и пароль`() {
         SettingsStore.save(
             dir,
-            SettingsStore.load(dir).copy(token = "", username = "")
+            AppSettings(dataDir = dir.toString(), token = "токен", username = "vasya", password = "пароль")
+        )
+        // Ровно то, что делает кнопка «Выйти»: сохраняем настройки с пустыми
+        // учётными данными.
+        SettingsStore.save(
+            dir,
+            SettingsStore.load(dir).copy(token = "", username = "", password = "")
         )
         val loaded = SettingsStore.load(dir)
         assertEquals("", loaded.token)
         assertEquals("", loaded.username)
+        assertEquals("", loaded.password)
         // Остальные настройки не должны пострадать.
         assertEquals(ApiClient.DEFAULT_URL, loaded.serverUrl)
     }
