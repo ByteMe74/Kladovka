@@ -204,6 +204,58 @@ $local -eq $remote.md5
 # который захватит всё, что лежит поверх
 ```
 
+### Подпись EXE
+
+Раздаваемый `Kladovka.exe` подписан подписью кода. Сертификат самоподписанный:
+`CN=Kladovka, OU=Mobile, O=Kladovka, L=Chelyabinsk, C=RU`, RSA 4096, срок 10 лет,
+EKU «Подписывание кода». Отпечаток `AAA225A6C2EC9DDE492A7C57FE47E97CBDACA3B1`.
+
+Подпись ставится с меткой времени DigiCert, поэтому остаётся верной и после
+истечения срока самого сертификата.
+
+```powershell
+$cert = New-SelfSignedCertificate -Type CodeSigningCert `
+  -Subject "CN=Kladovka, OU=Mobile, O=Kladovka, L=Chelyabinsk, S=Chelyabinsk, C=RU" `
+  -KeyAlgorithm RSA -KeyLength 4096 -KeyUsage DigitalSignature `
+  -CertStoreLocation "Cert:\CurrentUser\My" -NotAfter (Get-Date).AddYears(10) `
+  -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3")
+& "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign `
+  /fd SHA256 /sha1 $cert.Thumbprint /tr http://timestamp.digicert.com /td SHA256 `
+  build\dist\Kladovka.exe
+```
+
+Проверка:
+
+```powershell
+Get-AuthenticodeSignature build\dist\Kladovka.exe
+# Status: UnknownError — ожидаемо, корень самоподписанный и не доверен
+& "...\signtool.exe" verify /pa build\dist\Kladovka.exe
+# единственная ошибка: «root certificate which is not trusted» — это и есть суть
+```
+
+#### Почему щиток всё равно появляется
+
+Самоподписанный сертификат не убирает «Неизвестный издатель». Убирает его
+только сертификат, выданный удостоверяющим центром после проверки организации:
+OV или EV, платно, с документами и подтверждением личности. Это не задача кода.
+
+Что можно сделать без центра — один раз на своей машине доверить издателю.
+Скрипт `kladovka/ops/trust-kladovka-signing.ps1` кладёт публичную часть
+сертификата в хранилище «Доверенные издатели», после чего щиток исчезает.
+Требует прав администратора, действует только на той машине, где запущен.
+
+```powershell
+# Из окна администратора:
+.\kladovka\ops\trust-kladovka-signing.ps1
+# Откат:
+.\kladovka\ops\trust-kladovka-signing.ps1 -Remove
+```
+
+На чужих компьютерах щиток останется — и это правильно: там файл никто не
+проверял, и доверять ему нельзя по определению.
+
+---
+
 ### Версия
 
 `appVersion = "1.0.0"` в `build.gradle.kts` — единственное место, где версия
