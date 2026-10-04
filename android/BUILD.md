@@ -173,6 +173,37 @@ gradle test singleExe
 ошибок и логику обновления. EXE: `build\dist\Kladovka.exe` (портативный,
 установщика нет; данные в `~/.kladovka`).
 
+### Проверка запуска
+
+`build\dist\Kladovka.exe` — **не само приложение, а заглушка**. Она
+распаковывает рядом лежащую среду, запускает `java` отдельным процессом и
+сразу выходит с кодом 0. Поэтому «процесс exe завершился» ничего не значит:
+проверять надо тот, у которого окно.
+
+```powershell
+Start-Process build\dist\Kladovka.exe
+Start-Sleep 25
+Get-Process java | Where-Object MainWindowTitle -eq 'Кладовка'
+```
+
+Если окно есть — приложение поднялось. Оно открывает диалог входа на сервер,
+если логин ещё не сохранён; адрес сервера в нём показан только для чтения.
+
+Убедиться, что на сервере лежит именно этот файл:
+
+```powershell
+$local = (Get-FileHash build\dist\Kladovka.exe -Algorithm MD5).Hash.ToLower()
+$remote = (Invoke-WebRequest 'https://kladovka.dr6ter.ru/api.php?action=latestExe').Content | ConvertFrom-Json
+$local -eq $remote.md5
+```
+
+Снять скриншот окна, не спугнув его:
+
+```powershell
+# PrintWindow рисует только содержимое окна — в отличие от CopyFromScreen,
+# который захватит всё, что лежит поверх
+```
+
 ### Версия
 
 `appVersion = "1.0.0"` в `build.gradle.kts` — единственное место, где версия
