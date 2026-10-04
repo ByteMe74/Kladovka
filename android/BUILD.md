@@ -75,6 +75,62 @@ SHA-256: 9F:08:8D:20:5B:9D:B6:46:CF:0A:F9:90:39:94:29:13:6F:14:AF:08:4B:7D:A2:88
 `.\gradlew.bat :app:assembleDebug` — APK подписывается отладочным ключом
 (`CN=Android Debug`), ставится только после удаления release-версии.
 
+### Проверка на эмуляторе
+
+Сборка, подпись и совпадение md5 с сервером ещё ничего не говорят о том,
+работает ли приложение. До появления эмулятора APK ни разу не запускался.
+
+Эмулятор ставится отдельно:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Microsoft\jdk-21.0.12.8-hotspot'
+C:\Android\cmdline-tools\latest\bin\android.exe sdk --sdk=C:\Android install emulator
+C:\Android\cmdline-tools\latest\bin\android.exe sdk --sdk=C:\Android install "system-images;android-35;google_apis;x86_64"
+```
+
+Запуск без окна (когда нужно просто проверить, что не падает):
+
+```powershell
+C:\Android\emulator\emulator.exe -avd kladovka_test -no-window -no-audio `
+  -no-snapshot -gpu swiftshader_indirect -no-boot-anim -accel auto
+```
+
+Ждать `sys.boot_completed`, потом ставить и запускать:
+
+```powershell
+C:\Android\platform-tools\adb.exe install -r app\build\outputs\apk\release\app-release.apk
+C:\Android\platform-tools\adb.exe shell am start -n ru.kladovka/.MainActivity
+C:\Android\platform-tools\adb.exe shell dumpsys activity activities | Select-String topResumedActivity
+```
+
+Три вещи, которые ловятся только так:
+
+- **`INSTALL_FAILED_UPDATE_INCOMPATIBLE`** означает несовпадение подписей, а не
+  поломку сборки. Именно это ждёт того, кто переходит с 1.46 и ниже: там ключ
+  другой, и сначала нужно выгрузить данные, удалить старое приложение, поставить
+  новое и импортировать.
+- **Исключения при старте** видны в `adb logcat -d | Select-String 'FATAL
+  EXCEPTION'`.
+- **Разрывы слов в кнопках.** На экране 411dp пять вкладок нижней панели дают
+  примерно по 82dp на вкладку, и «Контейнеры» не помещалась — подпись
+  переносилась на две строки, а панель становилась выше. В диалоге синхронизации
+  так же рвалось «Отправить» — посередине слова, на «Отправи» / «ть». Ни тесты,
+  ни чтение кода этого не показывают, нужно смотреть на экран.
+
+Координаты для `adb shell input tap` берутся из дерева элементов, а не из
+снимка экрана: снимок при просмотре уменьшается, и тапы попадают мимо.
+
+```powershell
+C:\Android\platform-tools\adb.exe shell uiautomator dump /sdcard/ui.xml
+C:\Android\platform-tools\adb.exe pull /sdcard/ui.xml $env:TEMP\ui.xml
+# в ui.xml искать bounds="[x1,y1][x2,y2]" у нужного узла
+```
+
+У release-сборки `adb shell run-as ru.kladovka` не работает («package not
+debuggable») — базу так не прочитать. Проверить, что записи действительно
+сохранились, можно через экспорт: `Экспорт (бэкап)` пишет файл, который видно в
+`/sdcard/Download/` и который можно забрать через `adb pull`.
+
 ### Проверка подписи
 
 ```powershell

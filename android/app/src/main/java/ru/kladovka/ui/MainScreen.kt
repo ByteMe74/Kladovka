@@ -317,6 +317,23 @@ fun MainScreen(
                 )
             },
         bottomBar = {
+            // Пять вкладок на экране в 411dp — это примерно по 82dp на вкладку,
+            // и «Контейнеры» в стандартном labelMedium не помещался: подпись
+            // переносилась на две строки («Контейнер» / «ы»), панель становилась
+            // выше, а «Вещи» справа обрезалась. Замечено на эмуляторе.
+            //
+            // Поэтому у всех подписей запрещён перенос, а кегль уменьшен до
+            // labelSmall. Слова не меняем: «Контейнеры» — то самое название, что
+            // и в остальном приложении (7 упоминаний), одна вкладка с другим
+            // словом сбивала бы с толку.
+            val navLabel = @Composable { text: String ->
+                Text(
+                    text,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
             NavigationBar {
                 NavigationBarItem(
                     selected = tabIndex == 0,
@@ -326,7 +343,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Place, null)
                         }
                     },
-                    label = { Text("Места") }
+                    label = { navLabel("Места") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 1,
@@ -336,7 +353,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Layers, null)
                         }
                     },
-                    label = { Text("Стеллажи") }
+                    label = { navLabel("Стеллажи") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 2,
@@ -346,7 +363,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Layers, null)
                         }
                     },
-                    label = { Text("Полки") }
+                    label = { navLabel("Полки") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 3,
@@ -356,7 +373,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Archive, null)
                         }
                     },
-                    label = { Text("Контейнеры") }
+                    label = { navLabel("Контейнеры") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 4,
@@ -366,7 +383,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Inventory2, null)
                         }
                     },
-                    label = { Text("Вещи") }
+                    label = { navLabel("Вещи") }
                 )
             }
         },

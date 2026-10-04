@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -254,15 +255,27 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                                 showPushConfirm = true
                             },
                             enabled = synced && !busy,
+                            // Половина ширины узкого AlertDialog минус стандартные
+                            // отступы кнопки не вмещали «Отправить»: слово рвалось
+                            // посередине на «Отправи» / «ть», и кнопка выглядела
+                            // сломанной. Замечено на эмуляторе.
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Filled.CloudUpload, null, Modifier.size(20.dp))
-                                Text("Отправить")
+                                Text("Отправить", maxLines = 1, softWrap = false)
+                                // Подпись с направлением короче прежней: «телефон →
+                                // сервер» не помещалась в половину узкого диалога и
+                                // вылезала за кнопку. Стрелка и слово «На» читаются
+                                // однозначно, а смысл («куда» подразумевается из
+                                // подписи под рядом) уже объяснён строкой ниже.
                                 Text(
-                                    "телефон → сервер",
+                                    "На сервер",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
                         }
@@ -272,15 +285,18 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                                 showPullConfirm = true
                             },
                             enabled = synced && !busy,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Filled.CloudDownload, null, Modifier.size(20.dp))
-                                Text("Загрузить")
+                                Text("Загрузить", maxLines = 1, softWrap = false)
                                 Text(
-                                    "сервер → телефон",
+                                    "С сервера",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
                         }
@@ -501,6 +517,15 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                         enabled = !busy,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    // Ряд из двух кнопок: AlertDialog на телефоне уже узкий, места
+                    // по половине на каждую не хватало, и «Дать доступ»
+                    // переносилась на две строки — кнопки получались разной
+                    // высоты. Замечено на эмуляторе.
+                    //
+                    // Уменьшаем внутренние отступы и запрещаем перенос: слова
+                    // оставляем как есть, потому что раздел уже называется
+                    // «Совместный доступ» и «Отозвать» без «доступ» читается
+                    // как отзыв самой учётной записи, а не доступа.
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
                             onClick = { vm.shareWith(shareUsername) { ok, msg ->
@@ -508,16 +533,18 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                                 if (ok) { shareUsername = ""; refreshShares() }
                             } },
                             enabled = shareUsername.isNotBlank() && !busy,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Дать доступ") }
+                        ) { Text("Дать доступ", maxLines = 1, softWrap = false) }
                         OutlinedButton(
                             onClick = { vm.unshareWith(shareUsername) { ok, msg ->
                                 shareMessage = friendlyMessage(msg)
                                 if (ok) { shareUsername = ""; refreshShares() }
                             } },
                             enabled = shareUsername.isNotBlank() && !busy,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f)
-                        ) { Text("Отозвать") }
+                        ) { Text("Отозвать", maxLines = 1, softWrap = false) }
                     }
                     shareMessage?.let {
                         Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
