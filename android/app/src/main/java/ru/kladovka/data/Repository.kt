@@ -417,7 +417,12 @@ class Repository(private val db: AppDatabase, private val appContext: Context) {
         fun itemLocation(i: Item): String {
             val c = i.containerId?.let(containers::get)
             val s = c?.shelfId?.let(shelves::get) ?: i.shelfId?.let(shelves::get)
-            val p = i.placeId?.let(places::get) ?: c?.placeId?.let(places::get) ?: s?.placeId?.let(places::get)
+            // Порядок тот же, что в `UiModels.locationOf`: место контейнера и
+            // полки важнее проставленного у вещи. Иначе столбец «Место» в CSV
+            // показывал бы место, в котором вещи нет, — и человек, открывший
+            // файл таблицей, пошёл бы не туда. Расхождение двух мест режет
+            // данные на глазах.
+            val p = c?.placeId?.let(places::get) ?: s?.placeId?.let(places::get) ?: i.placeId?.let(places::get)
             return listOfNotNull(
                 p?.name,
                 c?.name,

@@ -139,6 +139,28 @@ class CsvExportTest {
     }
 
     @Test
+    fun `в CSV место контейнера, а не проставленное у вещи`() {
+        // Человек открывает CSV таблицей и идёт по указанному месту. Если там
+        // написано «Балкон», а ящик стоит в кладовой, он не найдёт вещь — и
+        // это данные, которые смотрели через другое приложение.
+        val places = listOf(Place(id = 1, name = "Кладовая"), Place(id = 2, name = "Балкон"))
+        val shelves = listOf(Shelf(id = 1, name = "Стеллаж 1", placeId = 1))
+        val containers = listOf(Container(id = 1, name = "Ящик", shelfId = 1, placeId = 1))
+        val items = listOf(
+            Item(id = 1, name = "Ёлка", quantity = 1, unit = "шт", containerId = 1, placeId = 2)
+        )
+        val csv = buildCsv(places, shelves, containers, items)
+        assertTrue(
+            "в CSV должно быть место контейнера: $csv",
+            csv.contains("Кладовая · Ящик · Стеллаж 1")
+        )
+        assertTrue(
+            "место вещи попадать в CSV не должно: $csv",
+            !csv.contains("Балкон")
+        )
+    }
+
+    @Test
     fun `BOM стоит один раз и в начале, в данные не попадает`() {
         val items = listOf(Item(id = 1, name = "Первый", quantity = 1, unit = "шт"))
         val csv = buildCsv(emptyList(), emptyList(), emptyList(), items)
@@ -180,9 +202,13 @@ class CsvExportTest {
         fun itemLocation(i: Item): String {
             val c = i.containerId?.let(containerById::get)
             val s = c?.shelfId?.let(shelfById::get) ?: i.shelfId?.let(shelfById::get)
-            val p = i.placeId?.let(placeById::get)
-                ?: c?.placeId?.let(placeById::get)
+            // Тот же порядок, что в боевом Repository.exportCsv: место
+            // контейнера и полки важнее проставленного у вещи. Если здесь
+            // разойтись с боевым кодом, тест перестанет защищать то, что
+            // действительно пишется в файл.
+            val p = c?.placeId?.let(placeById::get)
                 ?: s?.placeId?.let(placeById::get)
+                ?: i.placeId?.let(placeById::get)
             return listOfNotNull(p?.name, c?.name, s?.name)
                 .joinToString(" · ")
                 .ifEmpty { "Без места" }

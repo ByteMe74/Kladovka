@@ -26,7 +26,16 @@ fun AppData.locationOf(item: Item): String {
     } else {
         item.shelfId?.let { sid -> shelves.firstOrNull { it.id == sid } }
     }
-    val placeId = item.placeId ?: container?.placeId ?: shelf?.placeId
+    // Место берём от самого глубокого известного уровня.
+    //
+    // Раньше приоритет был у item.placeId, из-за чего подпись получалась
+    // «Балкон · Ящик · Стеллаж 1» для вещи, лежащей в ящике в «Кладовой»:
+    // читалось как «ящик на балконе», то есть как ошибка при верных данных.
+    // Подпись — это один путь внутри одного места, и ящик на полке в кладовой
+    // не может оказаться на балконе. Та же правка и в Android: UiModels и
+    // Repository (CSV), иначе одно и то же место показывалось бы по-разному
+    // в разных экранах одного приложения.
+    val placeId = container?.placeId ?: shelf?.placeId ?: item.placeId
     val parts = mutableListOf<String>()
     placeName(placeId)?.let { parts += it }
     container?.let { parts += it.name }

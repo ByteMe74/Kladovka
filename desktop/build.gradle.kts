@@ -69,6 +69,19 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
 
     implementation(project(":shared"))
+
+    // Тесты в корневом модуле. Раньше их не было вовсе, а здесь лежит логика
+    // интерфейса — например `locationOf`, собирающая подпись места вещи. Она
+    // состоит только из данных и Compose не касается, но проверять её было
+    // нечем: правку «место контейнера важнее места вещи» проходило бы незамеченным.
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "failed", "skipped")
+    }
 }
 
 kotlin {
