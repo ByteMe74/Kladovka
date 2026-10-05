@@ -1,10 +1,17 @@
 # Кладовка
 
+[![Android](https://github.com/ByteMe74/Kladovka/actions/workflows/build-android.yml/badge.svg)](https://github.com/ByteMe74/Kladovka/actions/workflows/build-android.yml)
+[![Desktop](https://github.com/ByteMe74/Kladovka/actions/workflows/build-desktop.yml/badge.svg)](https://github.com/ByteMe74/Kladovka/actions/workflows/build-desktop.yml)
+[![Server scripts](https://github.com/ByteMe74/Kladovka/actions/workflows/build-scripts.yml/badge.svg)](https://github.com/ByteMe74/Kladovka/actions/workflows/build-scripts.yml)
+
 Складской учёт на телефоне: вещи, контейнеры, полки, стеллажи и кладовки, с
 фотографиями и синхронизацией между телефоном, компьютером и сервером.
 
 Работает на Android и Windows. Данные хранятся на своём сервере, а не в чужом
 облаке: `https://kladovka.dr6ter.ru`.
+
+Бейджи показывают состояние сборки: тесты и сборка Android, тесты и сборка
+десктопа, проверка серверных скриптов на переводы строк.
 
 ## Что это
 
