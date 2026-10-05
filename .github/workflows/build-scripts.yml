@@ -1,0 +1,73 @@
+# Проверка серверных скриптов.
+#
+# Отдельный workflow по той же причине, что и build-android.yml: свой бейдж.
+#
+# Почему это вообще проверяется. Скрипты уезжают на сервер, где их запускает
+# cron. Сломанный перенос строки в таком файле не даёт ошибки в месте поломки:
+# ядро ищет интерпретатор по строке `#!/bin/bash\r`, не находит и сообщает
+# «Нет такого файла или каталога» — при том что файл на месте. Монитор при этом
+# молчит, потому что пишет в лог только при смене состояния. Так уже терялся
+# монитор бэкапов, и поломка была не видна неделями.
+
+name: Build Server Scripts
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shell-scripts:
+    name: Скрипты сервера
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash -n, shebang и отсутствие CR в .sh
+        run: |
+          set -e
+          found=0
+          for f in android/ops/*.sh; do
+            [ -e "$f" ] || continue
+            echo "проверяю $f"
+            bash -n "$f"
+            head -1 "$f" | grep -q $'\r' && { echo "CR в shebang: $f"; exit 1; }
+            head -1 "$f" | grep -q '^#!' || { echo "нет shebang: $f"; exit 1; }
+            found=1
+          done
+          [ "$found" = 1 ] || { echo "не нашлось ни одного .sh"; exit 1; }
+          echo "все .sh в порядке"
+
+      - name: Нет символа CR в файлах, где он ломает выполнение
+        run: |
+          set -e
+          bad=0
+          for f in android/ops/*.sh android/*.php; do
+            [ -e "$f" ] || continue
+            if grep -q $'\r' "$f"; then echo "CR найден: $f"; bad=1; fi
+          done
+          [ "$bad" = 0 ] || exit 1
+          echo "CR не найден"
+
+      - name: PHP-синтаксис серверных файлов
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq php-cli >/dev/null
+          for f in android/*.php; do
+            [ -e "$f" ] || continue
+            echo "проверяю $f"
+            php -l "$f"
+          done
+
+      - name: Если упало — причина в аннотации
+        if: failure()
+        run: echo "::error::Проверка серверных скриптов упала"
