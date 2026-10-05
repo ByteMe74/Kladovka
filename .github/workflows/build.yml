@@ -1,0 +1,141 @@
+# Сборка и тесты.
+#
+# Зачем этот файл. Форма SignPath Foundation требует указать систему сборки,
+# и условия сертификата требуют, чтобы артефакты собирались в CI из исходников
+# этого репозитория. Без этого файла обещание в заявке было бы неправдой.
+#
+# Что здесь НЕ делается намеренно: подпись. Ключ Android не лежит в репозитории
+# и не кладётся в секреты GitHub - он нужен только на машине мейнтейнера и в
+# облачной копии. CI собирает и проверяет; подписанный релиз выходит локально.
+# Пересоздать ключ нельзя: новая подпись ломает обновление у всех, кто уже
+# поставил приложение (см. CODE_SIGNING_POLICY.md).
+
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ставим JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Ставим Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Кэш Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-android-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-android-
+
+      - name: Тесты
+        working-directory: android
+        run: ./gradlew test --stacktrace
+
+      # Сборка без ключа подписи: assembleRelease упадёт на отсутствии
+      # storePassword, а debug-сборка доказывает, что код компилируется целиком.
+      - name: Сборка APK (без подписи)
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Что получилось
+        run: |
+          find android/app/build/outputs -name '*.apk' -exec ls -l {} \;
+
+  desktop:
+    name: Desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ставим JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Кэш Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-desktop-${{ hashFiles('desktop/**/*.gradle*', 'desktop/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-desktop-
+
+      - name: Тесты
+        working-directory: desktop
+        run: ./gradlew test --stacktrace
+
+      - name: Сборка
+        working-directory: desktop
+        run: ./gradlew jar --stacktrace
+
+  shell-scripts:
+    name: Скрипты сервера
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Проверка синтаксиса .sh. Некорректный перенос строки в скрипте на
+      # сервере молча ломает расписание, и монитор об этом не сообщает - такой
+      # случай уже был. Проверка ловит это до выкладки.
+      - name: bash -n для всех серверных скриптов
+        run: |
+          set -e
+          found=0
+          for f in android/ops/*.sh; do
+            [ -e "$f" ] || continue
+            echo "проверяю $f"
+            bash -n "$f"
+            # Shebang обязан быть в первой строке и без CR - иначе Linux
+            # не запустит файл, а Windows его запишет.
+            head -1 "$f" | grep -q $'\r' && { echo "CR в shebang: $f"; exit 1; }
+            head -1 "$f" | grep -q '^#!' || { echo "нет shebang: $f"; exit 1; }
+            found=1
+          done
+          [ "$found" = 1 ] || { echo "не нашлось ни одного .sh"; exit 1; }
+
+      - name: Нет символа CR в файлах, где он ломает выполнение
+        run: |
+          set -e
+          bad=0
+          for f in android/ops/*.sh android/ops/*.php; do
+            [ -e "$f" ] || continue
+            if grep -q $'\r' "$f"; then echo "CR найден: $f"; bad=1; fi
+          done
+          [ "$bad" = 0 ] || exit 1
+          echo "CR не найден"
+
+      - name: PHP-синтаксис серверных файлов
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq php-cli >/dev/null
+          for f in android/*.php; do
+            [ -e "$f" ] || continue
+            echo "проверяю $f"
+            php -l "$f"
+          done
