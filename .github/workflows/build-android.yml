@@ -1,13 +1,15 @@
 # Сборка и тесты Android-приложения.
 #
-# Зачем отдельным файлом, а не вместе с остальным. Логи GitHub Actions видны
-# только после входа, а бейдж — без него. С тремя модулями в одном прогоне общий
-# бейдж отвечает на вопрос «сломалось ли что-нибудь», но не на вопрос «что
-# именно»: прогон падал трижды подряд, и каждый раз это было видно только
-# по факту. У каждого модуля теперь свой бейдж, и виноватый находится сразу.
+# Отдельным workflow по той же причине, что и остальные: свой бейдж вместо
+# общего, чтобы было видно, что именно сломалось, без входа в GitHub.
+#
+# SDK берётся из кэша, который наполняет workflow Android SDK. Раньше он ставился
+# здесь же, через android-actions/setup-android, и джоб падал за 22 секунды —
+# раньше, чем начиналась сборка. Разделение вынесло установку в отдельный бейдж:
+# видно, где именно поломка.
 #
 # Про подпись: ключ Android не лежит в репозитории и не кладётся в секреты
-# GitHub - он нужен только на машине мейнтейнера и в облачной копии. CI собирает
+# GitHub — он нужен только на машине мейнтейнера и в облачной копии. CI собирает
 # и проверяет, подписанный релиз выходит локально. Пересоздать ключ нельзя:
 # новая подпись ломает обновление у всех, кто уже поставил приложение.
 
@@ -39,24 +41,44 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Ставим Android SDK
-        uses: android-actions/setup-android@v3
-
-      # Компоненты перечислены явно: по умолчанию ставится «последнее», и рано
-      # или поздно оно перестаёт совпадать с compileSdk из build.gradle.kts.
-      #
-      # И sdk.dir записывается в local.properties, хотя ANDROID_HOME и должен
-      # хватать. Без этого прогон падал с «SDK location not found»: AGP ищет
-      # путь по разным правилам в зависимости от версии и от того, как именно
-      # установлен SDK, и полагаться на переменную окружения оказалось
-      # недостаточно. Файл не коммитится - он в .gitignore.
-      - name: Компоненты Android SDK
+      - name: "SDK: из кэша или ставим сами"
         run: |
-          set -e
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          set -euo pipefail
+          export ANDROID_HOME="$PWD/.android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+
+          # Кэш наполняет workflow Android SDK, но полагаться на него нельзя:
+          # он запускается не на каждый push, и если он откажет или попадёт под
+          # paths-фильтр, сборка останется без SDK. Поэтому при отсутствии
+          # кэша ставим всё сами — шаг виден целиком, в отличие от логов.
+          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            echo "кэша нет, ставлю SDK"
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            curl -fsSL -o "$RUNNER_TEMP/tools.zip" \
+              "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+            unzip -q "$RUNNER_TEMP/tools.zip" -d "$ANDROID_HOME/cmdline-tools"
+            mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          else
+            echo "беру SDK из кэша"
+          fi
+
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER" || { echo "::error::нет sdkmanager"; exit 1; }
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+          # Файла нет в репозитории, он в .gitignore. Пишется и в переменные
+          # окружения, и в local.properties: AGP ищет путь по своим правилам,
+          # и одной переменной окружения ему недостаточно — на сервере он так и
+          # ответил «SDK location not found».
           printf 'sdk.dir=%s\n' "$ANDROID_HOME" > android/local.properties
-          echo "записан sdk.dir=$ANDROID_HOME"
+          test -d "$ANDROID_HOME/platforms/android-35" || {
+            echo "::error::после установки нет platforms/android-35"
+            ls "$ANDROID_HOME/platforms" 2>&1 | tr '\n' ' '
+            exit 1
+          }
           echo "platforms: $(ls "$ANDROID_HOME/platforms" | tr '\n' ' ')"
 
       - name: Кэш Gradle
@@ -92,6 +114,7 @@ jobs:
         run: |
           echo "::error::Android: сборка упала"
           echo "::error::java: $(java -version 2>&1 | head -1)"
-          echo "::error::ANDROID_HOME=$ANDROID_HOME"
+          echo "::error::ANDROID_HOME=${ANDROID_HOME:-нет}"
           echo "::error::platforms: $(ls "$ANDROID_HOME/platforms" 2>&1 | tr '\n' ' ')"
           echo "::error::build-tools: $(ls "$ANDROID_HOME/build-tools" 2>&1 | tr '\n' ' ')"
+          echo "::error::local.properties: $(cat android/local.properties 2>&1)"

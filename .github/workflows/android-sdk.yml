@@ -1,0 +1,84 @@
+# Установка Android SDK отдельным workflow.
+#
+# Зачем отдельным файлом. Логи GitHub Actions видны только после входа, а
+# api.github.com с этой машины недоступен, поэтому единственный сигнал — бейдж.
+# Android-джоб падал за 22 секунды, то есть ещё до сборки, и по одному бейджу
+# нельзя было понять, ломается ли установка SDK или сама сборка. Теперь
+# установка проверяется отдельно и своим бейджем.
+#
+# SDK ставится вручную, а не экшеном android-actions/setup-android: от него
+# зависел и падал раньше, а полтора десятка строк с curl и unzip работают
+# одинаково везде и видны целиком.
+
+name: Android SDK
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'android/**/*.gradle*'
+      - 'android/gradle/wrapper/**'
+      - '.github/workflows/android-sdk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sdk:
+    name: SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ставим JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Путь внутри рабочего каталога: SDK лежит рядом с исходниками и виден
+      # целиком, а не прячется в неизвестное место на раннере.
+      - name: Скачиваем command line tools
+        run: |
+          set -euo pipefail
+          export ANDROID_HOME="$PWD/.android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl -fsSL -o "$RUNNER_TEMP/tools.zip" \
+            "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q "$RUNNER_TEMP/tools.zip" -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          test -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          echo "sdkmanager на месте"
+
+      - name: Компоненты SDK
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          echo "platforms: $(ls "$ANDROID_HOME/platforms" | tr '\n' ' ')"
+          echo "build-tools: $(ls "$ANDROID_HOME/build-tools" | tr '\n' ' ')"
+
+      # SDK весит около гигабайта, поэтому кладём его в кэш.
+      - name: Кэш SDK
+        uses: actions/cache@v4
+        with:
+          path: .android-sdk
+          key: android-sdk-35-${{ hashFiles('android/app/build.gradle.kts') }}
+          restore-keys: android-sdk-35-
+
+      - name: Если упало — причина в аннотации
+        if: failure()
+        run: |
+          echo "::error::Установка Android SDK упала"
+          echo "::error::ANDROID_HOME=${ANDROID_HOME:-нет}"
+          echo "::error::каталог SDK: $(ls -d "${ANDROID_HOME:-/нет}" 2>&1)"
+          echo "::error::platforms: $(ls "${ANDROID_HOME:-/нет}/platforms" 2>&1 | tr '\n' ' ')"
