@@ -106,7 +106,33 @@ jobs:
 
       - name: Что получилось
         run: |
-          find android/app/build/outputs -name '*.apk' -exec ls -l {} \;
+          set -euo pipefail
+          # Шаг с find тут стоял и молчал: find завершается успехом и когда
+          # ничего не нашёл, поэтому сборка могла остаться зелёной, не
+          # создав ни одного APK. Теперь отсутствие файла - ошибка.
+          found=0
+          for apk in android/app/build/outputs/apk/debug/*.apk; do
+            [ -e "$apk" ] || continue
+            ls -l "$apk"
+            found=1
+          done
+          [ "$found" = 1 ] || {
+            echo "::error::APK не собран: в android/app/build/outputs/apk/debug пусто"
+            ls -laR android/app/build/outputs 2>&1 | head -20
+            exit 1
+          }
+
+      # Артефакт выкладывается наружу, чтобы зелёный бейдж можно было проверить,
+      # а не только поверить. Скачать его может любой, у кого есть доступ к
+      # публичному репозиторию, - ровно это и нужно для подписи по правилам
+      # SignPath: артефакт должен быть получен из сборки в CI.
+      - name: Прикладываю APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kladovka-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
 
       # Аннотация читается на странице прогона без входа — в отличие от логов.
       - name: Если упало — окружение в аннотации

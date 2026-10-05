@@ -56,6 +56,33 @@ jobs:
           chmod +x gradlew
           xvfb-run --auto-servernum ./gradlew jar --stacktrace -Djava.awt.headless=true
 
+      # Как и в Android: зелёный бейдж без проверяемого артефакта ничего не
+      # доказывает. Jar обязан существовать, и он прикладывается наружу.
+      - name: Что получилось
+        run: |
+          set -euo pipefail
+          found=0
+          for jar in desktop/*/build/libs/*.jar desktop/build/libs/*.jar; do
+            [ -e "$jar" ] || continue
+            ls -l "$jar"
+            found=1
+          done
+          [ "$found" = 1 ] || {
+            echo "::error::jar не собран: в build/libs пусто"
+            find desktop -name '*.jar' -path '*build*' 2>&1 | head -10
+            exit 1
+          }
+
+      - name: Прикладываю jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: kladovka-jars
+          path: |
+            desktop/*/build/libs/*.jar
+            desktop/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Если упало — окружение в аннотации
         if: failure()
         run: |
