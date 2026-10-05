@@ -698,6 +698,44 @@ img { max-width: 100%; height: auto; }
       количеством, единицами, категориями, заметками и координатами мест.
     </p>
   </div>
+
+  <!-- Щиток Windows на EXE. Показывается только если на сервере есть сборка для
+       Windows: у кого её нет, вопрос неактуален. Текст написан по фактам: щиток
+       даёт SmartScreen за неизвестного издателя, а не за содержимое файла —
+       Defender этот файл сканирует и угроз не находит. -->
+  <?php if ($exeLatest !== ''): ?>
+  <div style="max-width:760px; margin:20px auto 0; padding:18px 20px; border-radius:14px;
+              border:1px solid rgba(120,160,255,.30); background:rgba(120,160,255,.06);">
+    <div style="color:#9db8ff; font-weight:700; margin-bottom:8px;">
+      🛡 Windows показывает синий щиток «защитил ваш компьютер»
+    </div>
+    <p style="margin:0 0 10px; color:var(--muted); font-size:.92rem; line-height:1.55;">
+      Так Windows предупреждает о программе, чей издатель ему не знаком. Файл при
+      этом подписан, и проверяющий антивирус на нём ничего не находит — на всякий
+      случай: можно загрузить <code>Kladovka.exe</code> на
+      <span style="color:var(--ink);">virus.total</span> и посмотреть вердикт
+      семидесяти проверяющих.
+    </p>
+    <p style="margin:0 0 8px; color:var(--ink); font-weight:600; font-size:.94rem;">
+      Как открыть
+    </p>
+    <ol style="margin:0 0 12px; padding-left:20px; color:var(--muted); font-size:.92rem; line-height:1.7;">
+      <li>Нажмите «Подробнее» на щитке.</li>
+      <li>Нажмите «Выполнить в любом случае» — файл запустится.</li>
+    </ol>
+    <p style="margin:0 0 10px; color:var(--muted); font-size:.92rem; line-height:1.55;">
+      Чтобы вопрос не появлялся вовсе, на своём компьютере можно один раз
+      доверить издателя — это делается одной командой от администратора, спросите
+      того, кто у вас настраивает компьютер. Дальше щиток не показывается ни
+      разу.
+    </p>
+    <p style="margin:0; color:var(--muted); font-size:.88rem; line-height:1.55;">
+      Почему так: удостоверяющий центр выдаёт подпись только тем, чью организацию
+      он проверил, и это стоит денег. Самим подписаться так, чтобы Windows доверял
+      автоматически, нельзя — это было бы дырой в безопасности всех Windows в мире.
+    </p>
+  </div>
+  <?php endif; ?>
   <p style="text-align:center; color:var(--muted); margin-top:14px; font-size:.9rem;">
     Работаете за компьютером? <?php if ($cabAuthed): ?>
     <a href="/cabinet/" class="btn btn-ghost btn-sm" style="margin-left:4px;">Открыть кабинет</a>
