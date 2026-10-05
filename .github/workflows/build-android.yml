@@ -134,6 +134,38 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # Проверка самого APK и отчёт на странице прогона.
+      #
+      # Отчёт пишется в GITHUB_STEP_SUMMARY, а не в лог: логи GitHub видны только
+      # после входа, а summary — открытым текстом на странице прогона. Иначе
+      # «проверьте артефакт» означало бы «войдите в аккаунт», а это ровно то,
+      # чего хочется избежать в публичном проекте.
+      - name: Проверяю собранный APK
+        run: |
+          set -euo pipefail
+          apk=$(ls android/app/build/outputs/apk/debug/*.apk | head -1)
+          bt=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          md5=$(md5sum "$apk" | cut -d' ' -f1)
+          size=$(stat -c %s "$apk")
+          {
+            echo "## Собранный APK"
+            echo ""
+            echo "- файл: \`${apk##*/}\`"
+            echo "- размер: $size байт"
+            echo "- md5: \`$md5\`"
+            echo ""
+            echo '### Подпись'
+            echo '```'
+            "$bt/apksigner" verify --print-certs "$apk" 2>&1 | head -12 || echo "apksigner не отработал"
+            echo '```'
+            echo ""
+            echo "Отладочная сборка: подпись отладочным ключом, ключ релиза в CI нет"
+            echo "и лежать не должен - см. [CODE_SIGNING_POLICY.md](../blob/master/CODE_SIGNING_POLICY.md)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          # И в лог, для тех, кто логи читает.
+          echo "APK: ${apk##*/}, $size байт, md5=$md5"
+          "$bt/apksigner" verify --print-certs "$apk" 2>&1 | head -6 || true
+
       # Аннотация читается на странице прогона без входа — в отличие от логов.
       - name: Если упало — окружение в аннотации
         if: failure()
