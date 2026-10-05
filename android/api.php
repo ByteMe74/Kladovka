@@ -9,10 +9,23 @@
 //   export                GET  (auth)                  -> весь бэкап JSON
 //   import                POST (auth) {json}           -> полная замена данных
 //   list                  GET  (auth)                  -> {places,shelves,polki,containers,items}
+//   status                GET  (auth)                  -> {ok,counts,time}
 //   save_place|shelf|polka|container|item POST (auth) {...}
 //   delete_place|shelf|polka|container|item POST (auth) {id}  (связи обнуляются, не удаляются)
 //   upload_photo          POST (auth) multipart {photo} -> {url}
 //   logout                GET/POST (auth)              -> {ok} (токены статистичны)
+//
+//   list и status — диагностика, а не то, чем пользуются приложения. Приложения
+//   ходят через export и import; эти два нужны, чтобы посмотреть склад и
+//   убедиться, что сервер жив, не разбирая бэкап. Ими пользуются проверочные
+//   скрипты из sync-test/, а ежечасный монитор зовёт latestApk: для проверки
+//   живости это то же самое, но не требует токена.
+//
+//   Отдельных действий places, shelves, polki и containers нет, и их не должно
+//   быть: они когда-то подразумевались как «вернуть список одной сущности»,
+//   но никто к ним не обращался, а list отдаёт всё сразу. Запрос к ним честно
+//   отвечает «Неизвестное действие» — проверено, код 400, а не молчаливый пустой
+//   список, на который можно было бы поверить как на пустой склад.
 //
 // Аутентификация: заголовок Authorization: Bearer <token> (или X-Api-Key для
 //   ключа из конфига). Приём токена из query-строки убран — см. $token ниже.
