@@ -9,6 +9,10 @@
 # облачной копии. CI собирает и проверяет; подписанный релиз выходит локально.
 # Пересоздать ключ нельзя: новая подпись ломает обновление у всех, кто уже
 # поставил приложение (см. CODE_SIGNING_POLICY.md).
+#
+# Про chmod: git на Windows не хранит бит исполнения, поэтому gradlew приезжает
+# без него, и первый прогон упал с кодом 126. Бит выставлен и в индексе, и
+# здесь - на случай, если репозиторий склонировали иначе.
 
 name: Build
 
@@ -41,6 +45,15 @@ jobs:
       - name: Ставим Android SDK
         uses: android-actions/setup-android@v3
 
+      # Компоненты SDK перечислены явно. По умолчанию ставится «последнее»,
+      # и однажды это «последнее» перестаёт совпадать с compileSdk - сборка
+      # падает с сообщением, которое не прочитаешь, не зная деталей.
+      - name: Компоненты Android SDK
+        run: |
+          set -e
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
       - name: Кэш Gradle
         uses: actions/cache@v4
         with:
@@ -52,17 +65,34 @@ jobs:
 
       - name: Тесты
         working-directory: android
-        run: ./gradlew test --stacktrace
+        run: |
+          chmod +x gradlew
+          ./gradlew test --stacktrace
 
       # Сборка без ключа подписи: assembleRelease упадёт на отсутствии
       # storePassword, а debug-сборка доказывает, что код компилируется целиком.
       - name: Сборка APK (без подписи)
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
 
       - name: Что получилось
         run: |
           find android/app/build/outputs -name '*.apk' -exec ls -l {} \;
+
+      # Аннотация видна на странице прогона без входа в GitHub, поэтому при
+      # сбое причина попадает в интерфейс, а не остаётся в логах.
+      - name: Если упало — причина в аннотации
+        if: failure()
+        run: |
+          {
+            echo "::error::Android: сборка упала. Состояние окружения:"
+            echo "::error::JAVA_HOME=$JAVA_HOME ANDROID_HOME=$ANDROID_HOME"
+            echo "::error::java: $(java -version 2>&1 | head -1)"
+            echo "::error::platforms: $(ls "$ANDROID_HOME/platforms" 2>&1 | tr '\n' ' ')"
+            echo "::error::build-tools: $(ls "$ANDROID_HOME/build-tools" 2>&1 | tr '\n' ' ')"
+          } 2>&1 | grep '::error::' || true
 
   desktop:
     name: Desktop
@@ -85,13 +115,30 @@ jobs:
           key: gradle-desktop-${{ hashFiles('desktop/**/*.gradle*', 'desktop/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-desktop-
 
+      # Compose Desktop тянет Skiko, которому нужна графическая подсистема. На
+      # сервере GitHub её нет, и код, проверяющий только данные, всё равно может
+      # дойти до инициализации окна. xvfb даёт виртуальный дисплей вместо
+      # настоящего, а headless-флаг не даёт библиотеке искать X-сервер.
       - name: Тесты
         working-directory: desktop
-        run: ./gradlew test --stacktrace
+        run: |
+          chmod +x gradlew
+          xvfb-run --auto-servernum ./gradlew test --stacktrace -Djava.awt.headless=true
 
       - name: Сборка
         working-directory: desktop
-        run: ./gradlew jar --stacktrace
+        run: |
+          chmod +x gradlew
+          xvfb-run --auto-servernum ./gradlew jar --stacktrace -Djava.awt.headless=true
+
+      - name: Если упало — причина в аннотации
+        if: failure()
+        run: |
+          {
+            echo "::error::Desktop: сборка упала. Состояние окружения:"
+            echo "::error::java: $(java -version 2>&1 | head -1)"
+            echo "::error::DISPLAY=${DISPLAY:-нет} xvfb: $(command -v xvfb-run || echo 'не найден')"
+          } 2>&1 | grep '::error::' || true
 
   shell-scripts:
     name: Скрипты сервера
@@ -122,7 +169,7 @@ jobs:
         run: |
           set -e
           bad=0
-          for f in android/ops/*.sh android/ops/*.php; do
+          for f in android/ops/*.sh android/*.php; do
             [ -e "$f" ] || continue
             if grep -q $'\r' "$f"; then echo "CR найден: $f"; bad=1; fi
           done
@@ -139,3 +186,8 @@ jobs:
             echo "проверяю $f"
             php -l "$f"
           done
+
+      - name: Если упало — причина в аннотации
+        if: failure()
+        run: |
+          echo "::error::Скрипты сервера: проверка упала"
