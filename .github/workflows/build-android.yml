@@ -44,11 +44,20 @@ jobs:
 
       # Компоненты перечислены явно: по умолчанию ставится «последнее», и рано
       # или поздно оно перестаёт совпадать с compileSdk из build.gradle.kts.
+      #
+      # И sdk.dir записывается в local.properties, хотя ANDROID_HOME и должен
+      # хватать. Без этого прогон падал с «SDK location not found»: AGP ищет
+      # путь по разным правилам в зависимости от версии и от того, как именно
+      # установлен SDK, и полагаться на переменную окружения оказалось
+      # недостаточно. Файл не коммитится - он в .gitignore.
       - name: Компоненты Android SDK
         run: |
           set -e
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > android/local.properties
+          echo "записан sdk.dir=$ANDROID_HOME"
+          echo "platforms: $(ls "$ANDROID_HOME/platforms" | tr '\n' ' ')"
 
       - name: Кэш Gradle
         uses: actions/cache@v4

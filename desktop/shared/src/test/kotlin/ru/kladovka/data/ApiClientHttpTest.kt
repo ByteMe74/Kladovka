@@ -252,9 +252,17 @@ private val jsonMedia = "application/json; charset=utf-8".toMediaType()
  * Сертификат для HTTPS-стенда: самий выданный, ничего не проверяющий, кроме
  * того что мы ему доверяем. Нужен, чтобы поднять стенд по https — тогда клиент
  * проходит свою проверку схемы по-честному.
+ *
+ * Имя в списке SAN — оба, а не только 127.0.0.1. `MockWebServer` в адресе
+ * отдаёт `localhost`, но какое имя попадёт в проверку, зависит от того, как JVM
+ * развернёт это имя в адрес: на Windows выходило 127.0.0.1 и проверка проходила,
+ * на Linux оставалось `localhost` и десять тестов падали с
+ * `SSLPeerUnverifiedException: Hostname localhost not verified`. Тест не должен
+ * зависеть от платформы, поэтому сертификат покрывает оба варианта.
  */
 private val heldCertificate = HeldCertificate.Builder()
     .addSubjectAlternativeName("127.0.0.1")
+    .addSubjectAlternativeName("localhost")
     .commonName("kladovka-test")
     .build()
 
