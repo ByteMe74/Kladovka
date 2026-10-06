@@ -435,6 +435,77 @@ function upsertOwned(PDO $pdo, string $table, array $rec, array $fields, int $ui
     return $id;
 }
 
+/**
+ * Ставит на место ссылки после импорта: вещь указывает на полку, полка на
+ * стеллаж, контейнер на полку.
+ *
+ * Зачем это нужно. upsertOwned, когда номер записи на сервере занят чужими
+ * данными, выдаёт ей новый id — и пишет его в id_map. Но ссылки в полях
+ * containerId/shelfId/placeId оставались локальными, то есть указывали на
+ * номера, которые теперь принадлежат чужому складу. На проверке с 200 вещами
+ * пятнадцать из них после первого импорта ссылались на контейнеры другого
+ * человека: человек увидел бы у себя вещи внутри чужого ящика, а его вещи
+ * оказались бы в чужом.
+ *
+ * Два шага, оба обязательны:
+ *   1. Пересчёт по накопленной карте local id -> server id, одним UPDATE на
+ *      колонку, а не по одной записи: при 200 вещах и 40 контейнерах это
+ *      8000 отдельных запросов вместо одного.
+ *   2. Обнуление ссылок, которые не ведут на запись этого же человека. Это
+ *      ловит и нули в старых выгрузках, и ссылки на записи, которых у него
+ *      больше нет. Ссылки на собственные записи при этом не трогаются: если
+ *      родитель есть, но не попал в эту выгрузку, это частичный дамп, и
+ *      обнулять по нему нельзя.
+ *
+ * Возвращает, сколько ссылок поправлено, — это видно в ответе импорта.
+ */
+function remap_links(PDO $pdo, int $uid, array $remap): int {
+    // Колонки связей берутся ровно из схемы таблиц: у контейнеров есть shelfId и
+// placeId, но polkaId в них нет, и упоминание такой колонки роняет весь
+// импорт с «no such column».
+$links = [
+        'shelves'    => ['placeId' => 'places'],
+        'polki'      => ['shelfId' => 'shelves', 'placeId' => 'places'],
+        'containers' => ['shelfId' => 'shelves', 'placeId' => 'places'],
+        'items'      => ['placeId' => 'places', 'shelfId' => 'shelves', 'containerId' => 'containers'],
+    ];
+
+    $fixed = 0;
+    foreach ($links as $table => $cols) {
+        foreach ($cols as $col => $parent) {
+            // 1. Пересчёт: локальный номер родителя -> серверный.
+            $map = [];
+            foreach (($remap[$parent] ?? []) as $local => $server) {
+                $local = (int)$local; $server = (int)$server;
+                if ($local > 0 && $local !== $server) $map[$local] = $server;
+            }
+            if ($map) {
+                $when = []; $in = [];
+                foreach ($map as $local => $server) {
+                    $when[] = "WHEN $local THEN $server";
+                    $in[] = $local;
+                }
+                $n = count($in);
+                $st = $pdo->prepare(
+                    "UPDATE $table SET $col = CASE $col " . implode(' ', $when) . " ELSE $col END"
+                    . " WHERE ownerId = ? AND $col IN (" . implode(',', array_fill(0, $n, '?')) . ')'
+                );
+                $st->execute(array_merge([$uid], $in));
+                $fixed += $st->rowCount();
+            }
+
+            // 2. Ссылка обязана вести на запись этого же человека.
+            $st = $pdo->prepare(
+                "UPDATE $table SET $col = NULL WHERE ownerId = ? AND $col IS NOT NULL"
+                . " AND $col NOT IN (SELECT id FROM $parent WHERE ownerId = ?)"
+            );
+            $st->execute([$uid, $uid]);
+            $fixed += $st->rowCount();
+        }
+    }
+    return $fixed;
+}
+
 // ---------- Защита от перебора пароля ----------
 function failStore(array $cfg): string { return dirname($cfg['db']) . '/login-attempts.json'; }
 function loadFails(array $cfg): array {
@@ -840,6 +911,7 @@ switch ($action) {
                 }
             } else {
                 // Пользователь: обновляем ТОЛЬКО свои записи, чужие не трогаем
+                $remap = []; // таблица => локальный id => серверный id
                 foreach (['places','shelves','polki','containers','items'] as $t) {
                     $kept = []; // серверные id моих записей, которые остаются
                     foreach (($data[$t] ?? []) as $r) {
@@ -847,6 +919,7 @@ switch ($action) {
                         $localId = (int)($r['id'] ?? 0);
                         $serverId = upsertOwned($pdo, $t, $r, $FIELDS[$t], $uid, $localId);
                         $kept[] = $serverId;
+                        if ($localId > 0) $remap[$t][$localId] = $serverId;
                     }
                     // Удаляем мои записи, которых больше нет в дампе (заменены на телефоне)
                     $kept = array_values(array_unique(array_filter($kept, fn($k) => $k > 0)));
@@ -861,9 +934,10 @@ switch ($action) {
                     $dead = $pdo->prepare("DELETE FROM id_map WHERE owner_id=:o AND type=:t AND server_id NOT IN (SELECT id FROM $t WHERE ownerId=:o2)");
                     $dead->execute([':o' => $uid, ':t' => $t, ':o2' => $uid]);
                 }
+                $linksFixed = remap_links($pdo, $uid, $remap);
             }
             $pdo->commit();
-            respond(200, ['ok' => true, 'notes' => 'Импорт завершён']);
+            respond(200, ['ok' => true, 'notes' => 'Импорт завершён', 'linksFixed' => $linksFixed ?? 0]);
         } catch (Throwable $e) {
             $pdo->rollBack();
             error_log('[kladovka] import: ' . $e->getMessage());
