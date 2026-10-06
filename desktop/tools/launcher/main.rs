@@ -75,10 +75,48 @@ fn read_index(exe: &Path) -> std::io::Result<Vec<Entry>> {
         ));
     }
 
-    // Последние 8 байт — смещение индекса.
-    f.seek(SeekFrom::End(-8))?;
+    // Хвост: 8 байт со смещением индекса, затем метка KLDEXI1.
+    //
+    // Метка, а не «последние 8 байт», потому что подпись Authenticode
+    // дописывает сертификат в конец файла. При чтении жёсткого хвоста
+    // подписанный exe запускался с диалогом «не удалось запустить»: смещение
+    // бралось из байтов сертификата. Метка ищется с конца, и добавка после неё
+    // не мешает.
+    const TAIL_MAGIC: &[u8; 8] = b"KLDEXI1\n";
+    let need = TAIL_MAGIC.len() + 8;
+    if size < need as u64 {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "файл слишком мал — payload не приклеен",
+        ));
+    }
+    let window = 1_048_576usize; // сертификат обычно меньше, но с запасом
+    let window = window.min(size as usize);
+    let start = size as usize - window;
+    let mut buf = vec![0u8; window];
+    f.seek(SeekFrom::Start(start as u64))?;
+    f.read_exact(&mut buf)?;
+
+    let mut found: Option<usize> = None;
+    let mut i = window as isize - TAIL_MAGIC.len() as isize;
+    while i >= 0 {
+        if &buf[i as usize..i as usize + TAIL_MAGIC.len()] == TAIL_MAGIC {
+            found = Some(i as usize);
+            break;
+        }
+        i -= 1;
+    }
+    let magic_at = match found {
+        Some(p) if p >= 8 => p,
+        _ => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "в конце файла нет метки индекса — файл повреждён или это не Кладовка",
+            ))
+        }
+    };
     let mut tail = [0u8; 8];
-    f.read_exact(&mut tail)?;
+    tail.copy_from_slice(&buf[magic_at - 8..magic_at]);
     let index_off = u64::from_le_bytes(tail);
     if index_off + 8 > size {
         return Err(std::io::Error::new(

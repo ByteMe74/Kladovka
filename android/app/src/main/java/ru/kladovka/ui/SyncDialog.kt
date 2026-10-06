@@ -23,11 +23,13 @@ import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -198,30 +200,123 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     }
                 }
 
+                // ---------- Что ответил сервер ----------
+                // Сообщение стоит сразу под статусом, а не внизу окна. Раньше оно
+                // было после блока «Выход из аккаунта» — то есть за пределами
+                // видимой части на телефоне: человек нажимал «Подключиться», не
+                // видел ничего и нажимал снова. Проверено на живом аккаунте без
+                // подтверждённой почты: вход не проходит, и на экране было
+                // ровно то же самое, что и до нажатия.
+                message?.let { (isError, text) ->
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (isError) MaterialTheme.colorScheme.errorContainer
+                        else Color(0xFF123C2A),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            friendlyMessage(text),
+                            color = if (isError) MaterialTheme.colorScheme.onErrorContainer
+                            else Color(0xFFB7F5D6),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
                 HorizontalDivider()
 
                 // ---------- Параметры подключения ----------
                 // По умолчанию показываем только логин/пароль — адрес сервера
                 // скрыт (клиенту менять его не нужно, он уже заполнен).
-                Text("Вход", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Имя пользователя") },
-                    supportingText = { Text("Пусто — вход администратора") },
-                    singleLine = true,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Пароль") },
-                    singleLine = true,
-                    enabled = !busy,
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                //
+                // Вход и регистрация переключаются, а не раскрываются одна под
+                // другой. Раскрывающаяся панель оказалась хуже: на телефоне её
+                // поля уходили за нижний край окна, и до них нельзя было дотянуться
+                // — проверено на живой установке, окно дальше не прокручивается.
+                // Переключатель держит три поля над сгибом экрана при любом
+                // содержимом окна.
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = !showRegister,
+                        onClick = { showRegister = false },
+                        label = { Text("Вход", maxLines = 1, softWrap = false) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = showRegister,
+                        onClick = {
+                            showRegister = true
+                            if (regUsername.isEmpty()) regUsername = username
+                        },
+                        label = { Text("Регистрация", maxLines = 1, softWrap = false) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                if (!showRegister) {
+                    OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        label = { Text("Имя пользователя") },
+                        supportingText = { Text("Пусто — вход администратора") },
+                        singleLine = true,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Пароль") },
+                        singleLine = true,
+                        enabled = !busy,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    OutlinedTextField(
+                        value = regUsername,
+                        onValueChange = { regUsername = it },
+                        label = { Text("Новое имя пользователя") },
+                        singleLine = true,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = regEmail,
+                        onValueChange = { regEmail = it },
+                        label = { Text("Почта — на неё придёт ссылка") },
+                        singleLine = true,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = regPassword,
+                        onValueChange = { regPassword = it },
+                        label = { Text("Пароль, минимум 6 символов") },
+                        singleLine = true,
+                        enabled = !busy,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Button(
+                        onClick = { vm.syncRegister(regUsername.trim(), regPassword, regEmail.trim()) },
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Person, null, Modifier.size(18.dp))
+                        Text("  Создать аккаунт", fontWeight = FontWeight.SemiBold)
+                    }
+                    Text(
+                        "Без подтверждения почты склад живёт только на этом телефоне: сервер не отдаст " +
+                            "и не примет данные. Поэтому письмо лучше подтвердить.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 // Адрес сервера убран из UI: сервер один и он зашит в приложение. Поле
                 // давало человеку вписать любой адрес — и ошибиться, и увести свои
                 // данные и пароль на посторонний хост одной опечаткой.
@@ -347,14 +442,6 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-                message?.let { (isError, text) ->
-                    Text(
-                        friendlyMessage(text),
-                        color = if (isError) MaterialTheme.colorScheme.error else Color(0xFF3DDC84),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
 
                 HorizontalDivider()
 

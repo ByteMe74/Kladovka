@@ -3,8 +3,21 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-/** Версия приложения — одно место для сборки exe, установщика и ресурса VERSIONINFO. */
-val appVersion = "1.0.0"
+/**
+ * Версия приложения — одно место для сборки exe, установщика и ресурса VERSIONINFO.
+ *
+ * 1.1.0, а не 1.0.1: код версии у нас `major*100 + minor`, то есть в сравнении
+ * участвует только major.minor. Патч в коде не участвует, поэтому 1.0.0 и 1.0.1
+ * дали бы один и тот же код 100 — и человек, уже скачавший 1.0.0, обновления бы
+ * не увидел. Поднят minor: 110 больше 100, обновление приходит.
+ *
+ * Третья часть обязательна: jpackage требует MAJOR.MINOR.BUILD и на двухчастном
+ * имени падает, поэтому «1.1» собрать нельзя.
+ *
+ * Число 1.1 не значит «всё проверено». Что проверено и что нет, написано на
+ * странице сайта.
+ */
+val appVersion = "1.1.0"
 
 /**
  * Код версии для сравнения с сервером — та же схема, что у Android
@@ -233,12 +246,17 @@ val jlinkModules = listOf(
 
 val rawUberJar = layout.buildDirectory.dir("compose/jars").map { dir ->
     // Имя задаёт Compose-плагин; отжатый jar называется иначе и сюда не попадает.
+    // Каталог чистится перед сборкой вручную (см. BUILD.md): Compose-плагин
+    // называет jar по версии и старый не перетирает, а чистка внутри provider'а
+    // ломала порядок — зависимости задач вычисляются до выполнения зависимостей,
+    // и код, читающий каталог прямо здесь, падал с «uber-jar не найден».
     val jars = dir.asFile.listFiles { f ->
         f.name.startsWith("Kladovka-") && f.name.endsWith(".jar")
     }.orEmpty()
     require(jars.size == 1) {
         "ожидался ровно один uber-jar в ${dir.asFile}, найдено ${jars.size}: " +
-        jars.joinToString { it.name }
+        jars.joinToString { it.name } +
+        " — удалите build/compose/jars перед сборкой (BUILD.md)"
     }
     jars.single()
 }
@@ -285,7 +303,12 @@ val uberJar = layout.buildDirectory.file("compose/jars/kladovka-slim.jar")
 val slimUberJar by tasks.registering {
     description = "Оставляет в uber-jar только используемые библиотеки и иконки"
     dependsOn("packageUberJarForCurrentOS")
-    inputs.file(rawUberJar)
+    // Входом объявлен каталог, а не сам файл. `inputs.file(rawUberJar)` вычислялся
+    // до выполнения зависимостей, и на чистом build сборка падала с «uber-jar не
+    // найден, найдено 0» — то есть нельзя было собрать проект с нуля, только
+    // повторно, когда jar от предыдущей сборки ещё лежал на месте. Каталог
+    // Gradle отслеживает сам и инкрементальность сохраняется.
+    inputs.dir(layout.buildDirectory.dir("compose/jars"))
     outputs.file(uberJar)
     doLast {
         val src = rawUberJar.get()
@@ -601,8 +624,88 @@ val packSingleExe by tasks.registering(JavaExec::class) {
     }
 }
 
+/**
+ * Подпись готового exe — отдельным запуском, не из сборки.
+ *
+ * Её не было вовсе, и это стоило щитка Windows каждому, кто скачивал файл:
+ * `Get-AuthenticodeSignature` на собранном Kladovka.exe отвечал `NotSigned`,
+ * то есть подписи не было вообще — не самоподпись была слабой (как считалось
+ * раньше), а её не существовало. Подписанный файл, даже самоподписью, даёт
+ * целостность и внятный источник в свойствах.
+ *
+ * Почему отдельный запуск, а не задача сборки. Процесс, поднятый Gradle, не
+ * видит хранилище сертификатов пользователя: тот же пользователь, тот же
+ * APPDATA, тот же SID, но `Get-ChildItem Cert:\CurrentUser\My` возвращает ноль
+ * сертификатов — профиль пользователя не подгружается, и ключ DPAPI без него
+ * бесполезен. Задача, которая искала бы сертификат из сборки, всегда
+ * получала бы пустоту и тихо оставляла файл неподписанным.
+ *
+ * Скрипт `tools/sign-single-exe.ps1` ищет сертификат, ставит подпись с меткой
+ * времени (без неё подпись перестанет проверяться, когда сертификат истечёт —
+ * у нашего в 2036 году) и перечитывает статус, чтобы «успех» был фактом.
+ *
+ * Сертификат берётся из хранилища пользователя по имени. В репозитории его
+ * нет и быть не должно: файл с приватным ключом в репозитории означает, что
+ * ключ скомпрометирован.
+ */
+tasks.register("signExe") {
+    group = "distribution"
+    description = "Показывает, чем подписать готовый Kladovka.exe (сам запуск — вне сборки)"
+    doLast {
+        // Подпись НЕ выполняется отсюда, и это не лень, а измеренный факт.
+        // Процесс, запущенный сборкой, не видит хранилище сертификатов
+        // пользователя: тот же пользователь, тот же APPDATA, тот же SID, но
+        // `Get-ChildItem Cert:\CurrentUser\My` возвращает ноль сертификатов —
+        // профиль пользователя не подгружается, а ключ DPAPI без него
+        // бесполезен. Скрипт подписи, запущенный обычно, работает и подписывает.
+        //
+        // Задача оставлена как напоминание со ссылкой на скрипт, чтобы
+        // подпись нельзя было забыть молча.
+        logger.lifecycle("")
+        logger.lifecycle("Подпись EXE выполняется отдельным запуском:")
+        logger.lifecycle("  powershell -ExecutionPolicy Bypass -File tools\\sign-single-exe.ps1 -Exe build\\dist\\Kladovka.exe")
+        logger.lifecycle("Подписанный файл: цена — щитка нет у того, кто доверяет сертификату,")
+        logger.lifecycle("и у всех видна целостность. Без подписи щиток у всех.")
+        logger.lifecycle("")
+    }
+}
+
+/**
+ * Проверка payload в готовом exe.
+ *
+ * Читает индекс из самого файла и сверяет данные с исходниками. Отдельная
+ * задача, а не только проверка внутри упаковки, потому что упаковщик сверяет
+ * файл сразу после записи, а подпись потом дописывает в конец сертификат — то
+ * есть меняет файл после проверки. Именно так ломался запуск: сборка и проверка
+ * проходили, а подписанный exe не стартовал, потому что заглушка брала
+ * смещение индекса из последних 8 байт, а там оказались байты сертификата.
+ *
+ * Эту же задачу имеет смысл прогнать руками после подписи:
+ * `gradlew verifyExe`.
+ */
+val verifyExe by tasks.registering {
+    group = "verification"
+    description = "Сверяет payload в собранном exe с исходниками"
+    dependsOn(packSingleExe)
+    doLast {
+        val exe = finalExe.get().asFile
+        val rest = utf8Out +
+            arrayOf(
+                "-cp", toolsClasses.get().asFile.absolutePath,
+                "SingleExe", "verify",
+                exe.absolutePath,
+                runtimeDir.get().asFile.absolutePath,
+                uberJar.get().asFile.absolutePath,
+            )
+        // execTool принимает массив аргументов, а не vararg: подставлять
+        // нужно всё одним списком, иначе разъезжается порядок -Dfile.encoding
+        // с путями.
+        logger.lifecycle(execTool(emptyMap(), jdk21bin("java.exe"), rest).trim())
+    }
+}
+
 tasks.register("singleExe") {
     group = "distribution"
     description = "Единый переносимый Kladovka.exe — одним файлом, без установленной Java"
-    dependsOn(packSingleExe)
+    dependsOn(verifyExe)
 }

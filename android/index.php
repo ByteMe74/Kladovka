@@ -700,9 +700,14 @@ img { max-width: 100%; height: auto; }
   </div>
 
   <!-- Щиток Windows на EXE. Показывается только если на сервере есть сборка для
-       Windows: у кого её нет, вопрос неактуален. Текст написан по фактам: щиток
-       даёт SmartScreen за неизвестного издателя, а не за содержимое файла —
-       Defender этот файл сканирует и угроз не находит. -->
+       Windows: у кого её нет, вопрос неактуален.
+
+       Текст переписан после того, как подпись наконец появилась (её не было
+       вообще: Get-AuthenticodeSignature отвечал NotSigned). Теперь файл подписан
+       сертификатом проекта, и на любом компьютере, где этому сертификату
+       доверяют, щитка нет. У остальных щиток остаётся, но теперь он говорит
+       неправду, если назвать его «файл не подписан» — подписан, просто Windows
+       не знает издателя. -->
   <?php if ($exeLatest !== ''): ?>
   <div style="max-width:760px; margin:20px auto 0; padding:18px 20px; border-radius:14px;
               border:1px solid rgba(120,160,255,.30); background:rgba(120,160,255,.06);">
@@ -710,9 +715,11 @@ img { max-width: 100%; height: auto; }
       🛡 Windows показывает синий щиток «защитил ваш компьютер»
     </div>
     <p style="margin:0 0 10px; color:var(--muted); font-size:.92rem; line-height:1.55;">
-      Так Windows предупреждает о программе, чей издатель ему не знаком. Файл при
-      этом подписан, и проверяющий антивирус на нём ничего не находит — на всякий
-      случай: можно загрузить <code>Kladovka.exe</code> на
+      Файл подписан, и это можно проверить: в свойствах файла на вкладке
+      «Цифровая подпись» есть издатель
+      <code>CN=Kladovka</code>, а метка времени от DigiCert доказывает, что подпись
+      останется в силе и после истечения сертификата. Проверяющий антивирус на
+      файле тоже ничего не находит — можно загрузить <code>Kladovka.exe</code> на
       <span style="color:var(--ink);">virus.total</span> и посмотреть вердикт
       семидесяти проверяющих.
     </p>
@@ -730,9 +737,12 @@ img { max-width: 100%; height: auto; }
       разу.
     </p>
     <p style="margin:0; color:var(--muted); font-size:.88rem; line-height:1.55;">
-      Почему так: удостоверяющий центр выдаёт подпись только тем, чью организацию
-      он проверил, и это стоит денег. Самим подписаться так, чтобы Windows доверял
-      автоматически, нельзя — это было бы дырой в безопасности всех Windows в мире.
+      Почему щиток появляется у этого файла, но не у миллионов других: Windows
+      доверяет подписи автоматически, только если она сделана сертификатом,
+      выпущенным удостоверяющим центром, которому сам доверяет. Подпись
+      собственным сертификатом даёт целостность файла, но не репутацию издателя
+      во всём мире — иначе любой желающий мог бы выпустить подписанную программу и
+      обойти проверку, а это дыра в безопасности всех Windows.
     </p>
   </div>
   <?php endif; ?>
@@ -757,8 +767,8 @@ img { max-width: 100%; height: auto; }
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Главный экран</p>
     </div>
     <div style="text-align:center;">
-      <img src="/screens/03-item-edit.png" alt="Новая вещь" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
-      <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Новая вещь</p>
+      <img src="/screens/03-item-edit.png" alt="Регистрация аккаунта" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
+      <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Регистрация — прямо в приложении</p>
     </div>
     <div style="text-align:center;">
       <img src="/screens/04-place-edit.png" alt="Новое место" loading="lazy" width="200" height="444" style="width:200px; height:444px; border-radius:18px; border:1px solid rgba(0,240,255,.12); object-fit:cover; object-position:top; ">
@@ -769,7 +779,7 @@ img { max-width: 100%; height: auto; }
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Синхронизация</p>
     </div>
   </div>
-  <p style="text-align:center; color:var(--muted); font-size:12px; margin-top:4px;">Скриншоты <?= $apkVersion !== '' ? ('v' . $apkVersion) : '' ?> · <a href="/icon-512.png" style="color:var(--primary)">icon-512.png</a></p>
+  <p style="text-align:center; color:var(--muted); font-size:12px; margin-top:4px;">Скриншоты <?= $apkVersion !== '' ? ('v' . $apkVersion) : '' ?> — сняты с настоящего экрана телефона, на реальных данных · <a href="/icon-512.png" style="color:var(--primary)">icon-512.png</a></p>
 </section>
 
 <!-- ===== PRIVACY ===== -->

@@ -286,6 +286,49 @@ class ApiClient(
     }
 
     /**
+     * Смена своих данных: имя, почта, пароль.
+     *
+     * На телефоне это есть, на компьютере было недоступно — хотя серверное
+     * действие и Android-клиент его давно поддерживали. Поля пустые
+     * означают «не менять»: сервер разбирает только те, что пришли, поэтому
+     * пароль можно поменять, не трогая имя, и наоборот.
+     *
+     * Возвращает профиль с сервера после правки — он может измениться (например,
+     * при смене почты перестаёт быть подтверждённым), и показывать надо
+     * актуальное, а не то, что человек только что ввёл.
+     */
+    suspend fun updateProfile(
+        token: String,
+        username: String? = null,
+        email: String? = null,
+        newPassword: String? = null,
+        currentPassword: String? = null
+    ): UserProfile = withContext(Dispatchers.IO) {
+        val body = buildString {
+            append('{')
+            var first = true
+            fun put(key: String, value: String) {
+                if (value.isEmpty()) return
+                if (!first) append(',')
+                first = false
+                append("\"$key\":${quote(value)}")
+            }
+            put("username", username.orEmpty().trim())
+            put("email", email.orEmpty().trim())
+            put("new_password", newPassword.orEmpty())
+            put("current_password", currentPassword.orEmpty())
+            append('}')
+        }
+        if (body == "{}") return@withContext profile(token)
+        val text = apiCall("updateProfile", body, token)
+        val o = json.parseToJsonElement(text).jsonObject
+        if (o["ok"]?.jsonPrimitive?.content != "true") {
+            throw IOException(o["error"]?.jsonPrimitive?.content ?: "Не удалось сохранить изменения")
+        }
+        profile(token)
+    }
+
+    /**
      * Свежая версия, которую отдаёт сервер.
      *
      * Один класс на обе платформы, но спрашиваем разное действие: `latestApk` —

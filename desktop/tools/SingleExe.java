@@ -21,11 +21,17 @@ import java.util.stream.Stream;
  * Итоговый файл не требует ни папки рядом, ни установленной Java.
  *
  * Раскладка файла:
- *   [заглушка] [данные файлов] [индекс] [u64 LE — абсолютное смещение индекса]
+ *   [заглушка] [данные файлов] [индекс] [u64 LE — смещение индекса] [МАГИЯ 8 байт]
  *
  * Индекс: u32 LE «сколько файлов», затем на каждый u32 LE «длина пути»,
  * путь в UTF-8, u64 LE смещение и u64 LE длина. Путь у каждой записи свой —
  * общий путь означал бы, что все файлы пишутся поверх одного и того же.
+ *
+ * Магия в конце — обязательна, а не украшение. Подпись Authenticode дописывает
+ * сертификат в конец файла, и схема «последние 8 байт — смещение индекса» после
+ * подписи читает байты подписи: заглушка падала с диалогом «не удалось
+ * запустить», то есть подписанный exe был нерабочим. Читатель ищет магию с
+ * конца файла в окне, поэтому добавка после неё не мешает.
  *
  * Запуск:
  *   java SingleExe hash   &lt;каталог рантайма&gt; &lt;jar&gt;
@@ -35,6 +41,14 @@ import java.util.stream.Stream;
 public class SingleExe {
 
     private static final String RUNTIME_ENTRY = "app/" + "kladovka.jar";
+
+    /**
+     * Метка в конце файла, за которой идёт смещение индекса.
+     *
+     * Нужна из-за подписи: signtool дописывает сертификат в конец файла, и
+     * «последние 8 байт — смещение» после подписи указывают внутрь подписи.
+     */
+    static final byte[] TAIL_MAGIC = "KLDEXI1\n".getBytes(StandardCharsets.US_ASCII);
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
@@ -89,7 +103,11 @@ public class SingleExe {
             System.err.println("ПРОВАЛ: файл меньше 16 байт");
             return false;
         }
-        long indexOff = readLongLE(all, all.length - 8);
+        long indexOff = findIndexOffset(all);
+        if (indexOff < 0) {
+            System.err.println("ПРОВАЛ: в конце файла нет метки индекса");
+            return false;
+        }
         if (indexOff < 0 || indexOff + 8 > all.length) {
             System.err.println("ПРОВАЛ: смещение индекса " + indexOff + " вне файла (" + all.length + ")");
             return false;
@@ -167,6 +185,38 @@ public class SingleExe {
         System.out.println("  проверено файлов: " + entries.size()
                 + ", байт: " + entries.stream().mapToLong(IndexEntry::len).sum());
         System.out.println("  все данные в exe совпали с исходниками");
+        return true;
+    }
+
+    /**
+     * Смещение индекса: 8 байт перед меткой в конце файла.
+     *
+     * Метка ищется с конца, а не читается «последние 8 байт»: подпись
+     * Authenticode дописывает сертификат после метки, и жёсткая схема читала
+     * байты подписи вместо смещения. Возвращает -1, если метки нет.
+     */
+private static long findIndexOffset(byte[] all) {
+        int need = TAIL_MAGIC.length + 8;
+        if (all.length < need) return -1;
+        // from — конец буфера, где начинается метка, то есть all.length - 8.
+        // Считать от all.length - need нельзя: метка, лежащая в последних
+        // 8 байтах неподписанного файла, оказывалась на 8 байт правее начала
+        // окна, и поиск её не видел — verify падал на только что упакованном файле.
+        int from = all.length - TAIL_MAGIC.length;
+        // Не ниже 8: смещение лежит перед меткой, а не в начале файла.
+        for (int at = from; at >= 8; at--) {
+            if (regionEquals(all, at, TAIL_MAGIC)) {
+                return readLongLE(all, at - 8);
+            }
+        }
+        return -1;
+    }
+
+    private static boolean regionEquals(byte[] b, int at, byte[] pattern) {
+        if (at < 0 || at + pattern.length > b.length) return false;
+        for (int i = 0; i < pattern.length; i++) {
+            if (b[at + i] != pattern[i]) return false;
+        }
         return true;
     }
 
@@ -285,8 +335,11 @@ public class SingleExe {
                 entryOffset += blobs.get(i).length;
             }
 
-            ByteBuffer tail = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+            // Хвост: смещение индекса, затем метка. Порядок именно такой —
+            // читатель ищет метку с конца файла и читает 8 байт перед ней.
+            ByteBuffer tail = ByteBuffer.allocate(8 + TAIL_MAGIC.length).order(ByteOrder.LITTLE_ENDIAN);
             tail.putLong(indexOffset);
+            tail.put(TAIL_MAGIC);
             os.write(tail.array());
         }
 

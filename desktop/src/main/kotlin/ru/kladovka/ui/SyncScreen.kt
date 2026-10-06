@@ -45,8 +45,11 @@ import java.time.format.DateTimeFormatter
  * Действия соответствуют боевому api.php: отправка — `import`, загрузка — `export`.
  * Токен хранится в settings.properties рядом с базой — иначе после закрытия этого
  * окна пришлось бы вводить логин и пароль заново, а на Android сессия
- * восстанавливается автоматически. Кнопка «Выйти» стирает токен; серверный
- * `logout` — заглушка, токен у него статистичный и отозвать его нечем.
+ * восстанавливается автоматически. Кнопка «Выйти» стирает токен и вызывает
+ * серверный `logout`, который отзывает вход по-настоящему: токен у пользователя
+ * один и выводится из употребления через revoked_users, а не подменяется.
+ * Проверено на сервере: после выхода прежний токен отвечает 401, а новый вход
+ * снова его выдаёт и снимает отзыв.
  */
 @Composable
 fun SyncScreen(
@@ -72,6 +75,7 @@ fun SyncScreen(
     var shareUser by remember { mutableStateOf("") }
     var given by remember { mutableStateOf<List<String>>(emptyList()) }
     var received by remember { mutableStateOf<List<String>>(emptyList()) }
+    var showProfileEdit by remember { mutableStateOf(false) }
 
     // Профиль и списки доступа запрашиваются сразу после входа: на Android они
     // тянутся при открытии диалога синхронизации, здесь — раз в открытие,
@@ -259,6 +263,14 @@ fun SyncScreen(
                                 MaterialTheme.colorScheme.error
                             }
                         )
+                        // Смены данных не было на компьютере, хотя серверное
+                        // действие и телефон поддерживали её давно: чтобы поменять
+                        // имя или пароль, приходилось с телефона.
+                        OutlinedButton(
+                            enabled = !busy,
+                            onClick = { showProfileEdit = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("Изменить имя, почту или пароль") }
                     }
 
                     HorizontalDivider()
@@ -342,6 +354,37 @@ fun SyncScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("Загрузить бэкап из файла") }
 
+                // ---------- Смена своих данных ----------
+    // Имя, почта и пароль меняются через updateProfile. Пустое поле означает
+    // «не менять»: сервер разбирает только присланные поля, поэтому пароль
+    // можно поменять, не вписывая имя заново. Для смены пароля сервер требует
+    // текущий — иначе чужой, кто завёл телефон к вашему компьютеру, сменил бы
+    // пароль и отобрал бы склад.
+    if (showProfileEdit && token != null) {
+        val t = token ?: return@AlertDialog
+        EditProfileDialog(
+            current = profile,
+            onClose = { showProfileEdit = false },
+            onSave = { newName, newEmail, newPass, curPass ->
+                run {
+                    busy = true
+                    profile = api.updateProfile(t, newName, newEmail, newPass, curPass)
+                    // Имя изменилось — приводим и логин в настройках, иначе при
+                    // следующем входе приложение подставит старое имя и получит
+                    // отказ, хотя на сервере всё верно.
+                    val savedName = profile?.username.orEmpty()
+                    if (savedName.isNotBlank() && savedName != settings.username) {
+                        onSettingsChange(settings.copy(username = savedName))
+                    }
+                    showProfileEdit = false
+                    busy = false
+                    "Изменения сохранены"
+                }
+            },
+            onError = { msg -> busy = false; status = msg }
+        )
+    }
+
                 if (busy) {
                     Text("Выполняется…", style = MaterialTheme.typography.bodySmall)
                 }
@@ -360,6 +403,99 @@ fun SyncScreen(
             }
         },
         confirmButton = { TextButton(onClick = onClose) { Text("Закрыть") } }
+    )
+}
+
+/**
+ * Диалог смены своих данных: имя, почта, пароль.
+ *
+ * Поля показывают текущие значения, но отправляются только изменённые — иначе
+ * при каждом открытии уходит запрос с тем же самым, а при смене почты, например,
+ * сервер заново требует подтверждение. Пустое поле означает «не трогать».
+ */
+@Composable
+private fun EditProfileDialog(
+    current: UserProfile?,
+    onClose: () -> Unit,
+    onSave: (name: String, email: String, newPassword: String, currentPassword: String) -> Unit,
+    onError: (String) -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var newPass by remember { mutableStateOf("") }
+    var curPass by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
+
+    val passChanged = newPass.isNotEmpty()
+
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text("Изменить данные") },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()).heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Сейчас: ${current?.username.orEmpty().ifBlank { "—" }} · " +
+                        current?.email.orEmpty().ifBlank { "почта не указана" } +
+                        if (current?.emailVerified == true) " (подтверждена)" else "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Новое имя пользователя") },
+                    supportingText = { Text("Латиница, цифры и _; 3–30 символов. Пусто — не менять") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Новая почта") },
+                    supportingText = { Text("После смены придёт письмо и склад снова придётся подтвердить") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = newPass,
+                    onValueChange = { newPass = it },
+                    label = { Text("Новый пароль") },
+                    supportingText = { Text("Пусто — не менять") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (passChanged) {
+                    OutlinedTextField(
+                        value = curPass,
+                        onValueChange = { curPass = it },
+                        label = { Text("Текущий пароль — обязательно") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                localError?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (passChanged && curPass.isEmpty()) {
+                    localError = "Чтобы поменять пароль, введите текущий"
+                    return@TextButton
+                }
+                if (name.isBlank() && email.isBlank() && !passChanged) {
+                    onClose()
+                    return@TextButton
+                }
+                localError = null
+                onSave(name, email, newPass, curPass)
+            }) { Text("Сохранить") }
+        },
+        dismissButton = { TextButton(onClick = onClose) { Text("Отмена") } }
     )
 }
 
