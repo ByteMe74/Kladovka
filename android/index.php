@@ -769,7 +769,7 @@ img { max-width: 100%; height: auto; }
       <p style="color:var(--muted); font-size:12px; margin:8px 0 0;">Синхронизация</p>
     </div>
   </div>
-  <p style="text-align:center; color:var(--muted); font-size:12px; margin-top:4px;">Скриншоты <?= $apkVersion !== '' ? ('v' . $apkVersion) : '' ?> · <a href="/app/icon-512.png" style="color:var(--primary)">icon-512.png</a></p>
+  <p style="text-align:center; color:var(--muted); font-size:12px; margin-top:4px;">Скриншоты <?= $apkVersion !== '' ? ('v' . $apkVersion) : '' ?> · <a href="/icon-512.png" style="color:var(--primary)">icon-512.png</a></p>
 </section>
 
 <!-- ===== PRIVACY ===== -->
