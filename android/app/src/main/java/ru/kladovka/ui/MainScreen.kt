@@ -13,6 +13,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -94,11 +95,18 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -317,23 +325,9 @@ fun MainScreen(
                 )
             },
         bottomBar = {
-            // Пять вкладок на экране в 411dp — это примерно по 82dp на вкладку,
-            // и «Контейнеры» в стандартном labelMedium не помещался: подпись
-            // переносилась на две строки («Контейнер» / «ы»), панель становилась
-            // выше, а «Вещи» справа обрезалась. Замечено на эмуляторе.
-            //
-            // Поэтому у всех подписей запрещён перенос, а кегль уменьшен до
-            // labelSmall. Слова не меняем: «Контейнеры» — то самое название, что
-            // и в остальном приложении (7 упоминаний), одна вкладка с другим
-            // словом сбивала бы с толку.
-            val navLabel = @Composable { text: String ->
-                Text(
-                    text,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                    softWrap = false
-                )
-            }
+            // Подписи вкладок — см. NavTabLabel: кегль подбирается под ширину
+            // места, перенос запрещён. Иначе на узких экранах длинные слова
+            // молча обрезались посреди слова.
             NavigationBar {
                 NavigationBarItem(
                     selected = tabIndex == 0,
@@ -343,7 +337,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Place, null)
                         }
                     },
-                    label = { navLabel("Места") }
+                    label = { NavTabLabel("Места") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 1,
@@ -353,7 +347,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Layers, null)
                         }
                     },
-                    label = { navLabel("Стеллажи") }
+                    label = { NavTabLabel("Стеллажи") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 2,
@@ -363,7 +357,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Layers, null)
                         }
                     },
-                    label = { navLabel("Полки") }
+                    label = { NavTabLabel("Полки") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 3,
@@ -373,7 +367,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Archive, null)
                         }
                     },
-                    label = { navLabel("Контейнеры") }
+                    label = { NavTabLabel("Контейнеры") }
                 )
                 NavigationBarItem(
                     selected = tabIndex == 4,
@@ -383,7 +377,7 @@ fun MainScreen(
                             Icon(Icons.Filled.Inventory2, null)
                         }
                     },
-                    label = { navLabel("Вещи") }
+                    label = { NavTabLabel("Вещи") }
                 )
             }
         },
@@ -545,6 +539,104 @@ fun MainScreen(
             },
             confirmButton = { TextButton(onClick = { showThemeDialog = false }) { Text("Готово") } }
         )
+    }
+}
+
+/* ========================= Нижняя панель ========================= */
+
+/** Подписи вкладок снизу, в том же порядке, что и сами вкладки. */
+private val NavTabLabels = listOf("Места", "Стеллажи", "Полки", "Контейнеры", "Вещи")
+
+/**
+ * Ниже этого кегля подпись вкладки читать уже нечем.
+ *
+ * 7.5sp — это ровно то, во что «Контейнеры» укладывается в худшем случае: на
+ * экране в 320dp пять вкладок отдают под текст по 49.5dp (см. [NavTabLabel]),
+ * и слово в них помещается только так. Дальше шире — кегль растёт: 9sp на
+ * 361dp, 10sp на 411dp, а с 481dp и до любых широких экранов остаётся
+ * labelSmall (11sp) — то есть ровно то, что было до подгонки.
+ */
+private val NavLabelMinFontSize = 7.5.sp
+
+/**
+ * Подпись вкладки, которая всегда остаётся в одну строку и всегда умещается
+ * в свою долю экрана.
+ *
+ * Пять вкладок делят ширину поровну, но NavigationBarItem отдаёт подписи из
+ * этой доли меньше: зазор между вкладками (8dp) и поля внутри (по 4dp) на
+ * 320dp съедают почти треть — на текст остаётся 49.5dp, и «Контейнеры» в
+ * labelSmall в это не помещалось. Двух строк не было и раньше: перенос был
+ * запрещён, и текст молча обрезался по краю своего бокса, посреди слова — на
+ * «Стеллаж» и «Контейне». Замечено на эмуляторе при 320dp и 361dp.
+ *
+ * Поэтому кегль подбирается под ширину, а не задаётся намертво: берётся
+ * наибольший, при который укладываются все пять подписей сразу, и он
+ * применяется ко всем — тогда строки у всех одной высоты. Проверяется не
+ * только своя подпись, а все пять: иначе «Вещи» осталось бы крупным, а
+ * «Контейнеры» уехало бы за край. Перенос запрещён, лишнее обрезается
+ * многоточием — раскладку панели это не ломает.
+ *
+ * Слова не меняем: «Контейнеры» — то самое название, что и в остальном
+ * приложении (7 упоминаний), одна вкладка с другим словом сбивала бы с
+ * толку.
+ */
+@Composable
+private fun NavTabLabel(text: String) {
+    val baseStyle = MaterialTheme.typography.labelSmall
+    // Кэш на 8 не хватает: перебираем до восьми кеглей по пять слов.
+    val measurer = rememberTextMeasurer(cacheSize = 64)
+    val density = LocalDensity.current
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+    BoxWithConstraints {
+        // Своё место под подпись — то, что реально досталось вкладке. Если
+        // ограничений нет (панель положили во что-то без ширины), берём долю
+        // экрана: пять вкладок делят его поровну.
+        val slot = if (constraints.hasBoundedWidth) maxWidth else screenWidth / NavTabLabels.size
+        val style = remember(slot, baseStyle, density) {
+            val limitPx = with(density) { (slot - 1.dp).toPx() }
+            // Шаг в полпункта: разница на глаз не видна, а помещается в
+            // восемь значений, из которых выбираем первое подходящее.
+            var size = baseStyle.fontSize.value
+            val min = NavLabelMinFontSize.value
+            while (size > min && !fits(measurer, baseStyle, size.sp, limitPx)) {
+                size -= 0.5f
+            }
+            baseStyle.copy(fontSize = size.sp)
+        }
+        Text(
+            text,
+            style = style,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * Влезают ли все подписи в отведённую ширину целиком, без обрезки.
+ *
+ * Проверяются все пять, а не только самая длинная: «Стеллажи» и «Контейнеры»
+ * почти равны по числу букв, но по ширине разные, и выигравший по длине
+ * проигрывает по месту. Ширину меряем без ограничений — иначе вернётся та же
+ * ширина, что и у бокса, и проверка всегда будет «уложилось».
+ */
+private fun fits(
+    measurer: TextMeasurer,
+    style: TextStyle,
+    size: TextUnit,
+    limitPx: Float
+): Boolean {
+    val probe = style.copy(fontSize = size)
+    return NavTabLabels.all { label ->
+        measurer.measure(
+            text = label,
+            style = probe,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            constraints = Constraints()
+        ).size.width <= limitPx
     }
 }
 
