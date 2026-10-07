@@ -6,6 +6,44 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!-- Видимость приложений карт.
+
+         С Android 11 система не показывает приложению список того, что умеет
+         открывать ссылку, пока не объявишь это явно. Без этого блока
+         queryIntentActivities возвращает пустой список, и проверка «Яндекс Карты
+         открывают yandexmaps:// или нет» всегда даёт «нет» — то есть вместо
+         приложения карт человек получает браузер. Не поломка, но заметная
+         деградация: приложение установлено, а открывается сайт.
+
+         Объявлены все три схемы, которые проверяет код: geo:, yandexmaps: и
+         https (fallback, когда Яндекс Карт не установлены). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="yandexmaps" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="google.navigation" />
+        </intent>
+
+        <!-- Пакеты названы явно, потому что код спрашивает их и по имени:
+             getPackageInfo для трёх вариантов Яндекс Карт. Объявления только по
+             схеме недостаточно: с Android 11 невидимым оказывается и запрос
+             «есть ли такой пакет», и код решил бы, что карт нет. -->
+        <package android:name="ru.yandex.yandexmaps" />
+        <package android:name="com.yandex.yandexmaps" />
+        <package android:name="ru.yandex.maps" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
