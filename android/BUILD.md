@@ -117,6 +117,36 @@ C:\Android\platform-tools\adb.exe shell dumpsys activity activities | Select-Str
   так же рвалось «Отправить» — посередине слова, на «Отправи» / «ть». Ни тесты,
   ни чтение кода этого не показывают, нужно смотреть на экран.
 
+### Самые старые версии Android
+
+Приложение объявляет `minSdk = 26`, то есть Android 8.0. Образ этой версии
+больше не выдаётся `sdkmanager` — только `android-28` и `android-35`. Ставится
+вручную:
+
+```powershell
+# 956 МБ, образ x86_64
+curl.exe -sL -o api26.zip https://dl.google.com/android/repository/sys-img/google_apis/x86_64-26_r08.zip
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD\api26.zip", "$PWD\api26x")
+New-Item -ItemType Directory -Force C:\Android\system-images\android-26\google_apis | Out-Null
+Copy-Item .\api26x\x86_64 C:\Android\system-images\android-26\google_apis\x86_64 -Recurse -Force
+Copy-Item .\api26x\source.properties C:\Android\system-images\android-26\google_apis\x86_64\ -Force
+C:\Android\cmdline-tools\latest\bin\avdmanager.bat create avd -n kladovka_and8 `
+  -k "system-images;android-26;google_apis;x86_64" --force
+```
+
+Проверять только на нём нельзя: у образа физический кадр 320×640, и `wm size`
+его не меняет. Реальные размеры получаются через плотность — `wm density 320`
+даёт ширину 320 dp, `wm density 284` — 361 dp, `wm density 249` — 411 dp.
+
+**Один размер экрана проверкой не считается.** На 411dp нижняя панель
+выглядела правильно, а на 320dp подписи молча обрезались посреди слова
+(«Стеллаж», «Контейне») — `softWrap = false` не делает текст короче, он просто
+режет его по краю бокса. Точно так же форма регистрации целиком помещалась на
+экране 2400 px и не помещалась на 1920 px.
+
+Проверка на настоящем телефоне — отдельным списком, `DEVICE-CHECK.md`.
+
 Координаты для `adb shell input tap` берутся из дерева элементов, а не из
 снимка экрана: снимок при просмотре уменьшается, и тапы попадают мимо.
 
