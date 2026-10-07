@@ -283,7 +283,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             }.onFailure { e ->
                 syncToken = null
                 _synced.value = false
-                if (!silent) _syncMessage.value = true to (e.message ?: "Ошибка входа")
+                if (!silent) _syncMessage.value = true to ErrorText.of(e, "Ошибка входа")
                 onResult(false)
             }
         }
@@ -330,7 +330,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (e !is ApiException || e.code != 401) return false
         syncToken = null
         _synced.value = false
-        if (!silent) _syncMessage.value = true to (e.message ?: "Сессия закончилась — войдите снова")
+        if (!silent) _syncMessage.value = true to ErrorText.of(e, "Сессия закончилась — войдите снова")
         if (syncServerUsername().isNotEmpty() || syncServerPassword().isNotEmpty()) {
             syncLogin(silent = true)
         }
@@ -363,7 +363,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             }.onFailure { e ->
                 syncToken = null
                 _synced.value = false
-                _syncMessage.value = true to (e.message ?: "Ошибка регистрации")
+                _syncMessage.value = true to ErrorText.of(e, "Ошибка регистрации")
                 onResult(false)
             }
         }
@@ -427,7 +427,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 )
             }.onFailure { e ->
-                onResult(false, e.message ?: "Не удалось обновить профиль")
+                onResult(false, ErrorText.of(e, "Не удалось обновить профиль"))
             }
         }
     }
@@ -458,7 +458,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val result = runCatching { repo.serverShare(syncServerUrl(), token, username) }
             _syncBusy.value = false
             result.onSuccess { onResult(true, "Доступ открыт для $it") }.onFailure { e ->
-                onResult(false, e.message ?: "Ошибка")
+                onResult(false, ErrorText.of(e, "Не удалось открыть доступ"))
             }
         }
     }
@@ -475,7 +475,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val result = runCatching { repo.serverUnshare(syncServerUrl(), token, username) }
             _syncBusy.value = false
             result.onSuccess { onResult(true, "Доступ отозван для $username") }.onFailure { e ->
-                onResult(false, e.message ?: "Ошибка")
+                onResult(false, ErrorText.of(e, "Не удалось отозвать доступ"))
             }
         }
     }
@@ -533,7 +533,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             prefs.edit().putLong("lastSyncAt", _lastSyncAt.value).apply()
         }.onFailure { e ->
             if (!handleSessionLoss(e, silent)) {
-                if (!silent) _syncMessage.value = true to (e.message ?: "Ошибка отправки")
+                if (!silent) _syncMessage.value = true to ErrorText.of(e, "Ошибка отправки")
             }
         }
         return result.isSuccess
@@ -566,7 +566,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }.onFailure { e ->
                 if (!handleSessionLoss(e, silent = false)) {
-                    _syncMessage.value = true to (e.message ?: "Ошибка загрузки")
+                    _syncMessage.value = true to ErrorText.of(e, "Ошибка загрузки")
                 }
                 onResult(false)
             }
@@ -632,7 +632,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 }
                 .onFailure { e ->
-                    _updateInfo.value = "Не удалось проверить обновление: ${e.message}"
+                    // Раньше сюда попадало «Unable to resolve host ...» — при выключенном
+                    // интернете человек не понимал, что делать. Теперь текст готовый.
+                    _updateInfo.value = "Не удалось проверить обновление: ${ErrorText.of(e)}"
                     _updateUrl.value = null
                 }
         }

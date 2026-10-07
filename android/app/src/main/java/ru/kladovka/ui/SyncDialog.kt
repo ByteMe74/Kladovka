@@ -215,7 +215,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            friendlyMessage(text),
+                            ErrorText.human(text),
                             color = if (isError) MaterialTheme.colorScheme.onErrorContainer
                             else Color(0xFFB7F5D6),
                             style = MaterialTheme.typography.bodyMedium,
@@ -277,45 +277,68 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    OutlinedTextField(
-                        value = regUsername,
-                        onValueChange = { regUsername = it },
-                        label = { Text("Новое имя пользователя") },
-                        singleLine = true,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = regEmail,
-                        onValueChange = { regEmail = it },
-                        label = { Text("Почта — на неё придёт ссылка") },
-                        singleLine = true,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = regPassword,
-                        onValueChange = { regPassword = it },
-                        label = { Text("Пароль, минимум 6 символов") },
-                        singleLine = true,
-                        enabled = !busy,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Button(
-                        onClick = { vm.syncRegister(regUsername.trim(), regPassword, regEmail.trim()) },
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.Person, null, Modifier.size(18.dp))
-                        Text("  Создать аккаунт", fontWeight = FontWeight.SemiBold)
+                    // Метки короткие и строго в одну строку. Длинные метки
+                    // («Почта — на неё придёт ссылка») переносились на две строки,
+                    // и каждое поле становилось вдвое выше обычного: 88dp вместо
+                    // 64dp. Из-за этого кнопка «Создать аккаунт» уезжала за нижний
+                    // край окна — на экране 1080×1920 от неё оставалось 9 пикселей,
+                    // то есть её не было видно совсем, и человек не догадывался, что
+                    // окно прокручивается. Замерено на эмуляторе Android 9.
+                    //
+                    // Пояснения из меток вынесены отдельным мелким текстом под поля
+                    // (две строки на всю форму), а внутри блока отступы уменьшены с
+                    // 14dp до 8dp: без этого вынесенные пояснения снова вытолкнули
+                    // бы кнопку за край. На Android 15 (1080×2400) дефекта не было
+                    // — там всё помещалось и раньше.
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = regUsername,
+                            onValueChange = { regUsername = it },
+                            label = { Text("Имя пользователя", maxLines = 1, softWrap = false) },
+                            singleLine = true,
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = regEmail,
+                            onValueChange = { regEmail = it },
+                            label = { Text("Почта", maxLines = 1, softWrap = false) },
+                            singleLine = true,
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            // Метка «Почта — на неё придёт ссылка» была в две строки.
+                            // Пояснение вынесено под поле, но обязано уместиться в одну
+                            // строку: вторая строка съедала 42 пикселя и снова уводила
+                            // кнопку под сгиб экрана.
+                            "На почту придёт ссылка.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedTextField(
+                            value = regPassword,
+                            onValueChange = { regPassword = it },
+                            label = { Text("Пароль (6+ символов)", maxLines = 1, softWrap = false) },
+                            singleLine = true,
+                            enabled = !busy,
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Button(
+                            onClick = { vm.syncRegister(regUsername.trim(), regPassword, regEmail.trim()) },
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Filled.Person, null, Modifier.size(18.dp))
+                            Text("  Создать аккаунт", fontWeight = FontWeight.SemiBold)
+                        }
+                        Text(
+                            "Почту лучше подтвердить.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    Text(
-                        "Без подтверждения почты склад живёт только на этом телефоне: сервер не отдаст " +
-                            "и не примет данные. Поэтому письмо лучше подтвердить.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
                 // Адрес сервера убран из UI: сервер один и он зашит в приложение. Поле
                 // давало человеку вписать любой адрес — и ошибиться, и увести свои
@@ -616,7 +639,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
                             onClick = { vm.shareWith(shareUsername) { ok, msg ->
-                                shareMessage = friendlyMessage(msg)
+                                shareMessage = ErrorText.human(msg)
                                 if (ok) { shareUsername = ""; refreshShares() }
                             } },
                             enabled = shareUsername.isNotBlank() && !busy,
@@ -625,7 +648,7 @@ fun SyncDialog(vm: AppViewModel, onDismiss: () -> Unit) {
                         ) { Text("Дать доступ", maxLines = 1, softWrap = false) }
                         OutlinedButton(
                             onClick = { vm.unshareWith(shareUsername) { ok, msg ->
-                                shareMessage = friendlyMessage(msg)
+                                shareMessage = ErrorText.human(msg)
                                 if (ok) { shareUsername = ""; refreshShares() }
                             } },
                             enabled = shareUsername.isNotBlank() && !busy,
@@ -697,22 +720,5 @@ private fun syncedHost(url: String): String =
 private fun openDownloadUrl(context: Context, url: String) {
     runCatching {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-    }
-}
-
-/** Переводит технические сообщения сервера/сети на человеческий язык. */
-private fun friendlyMessage(raw: String): String {
-    val r = raw.lowercase()
-    return when {
-        r.contains("неверный логин") || r.contains("bad credentials") -> "Неверный логин или пароль. Проверьте их и попробуйте снова."
-        r.contains("unable to resolve host") || r.contains("не удалось разрешить") ->
-            "Не удаётся найти сервер. Проверьте адрес и подключение к интернету."
-        r.contains("failed to connect") || r.contains("connect timed out") || r.contains("timeout") ->
-            "Сервер не отвечает. Проверьте интернет и попробуйте ещё раз."
-        r.contains("http 4") -> "Сервер отказал в доступе. Проверьте логин и пароль."
-        r.contains("http 5") -> "На сервере временные проблемы. Попробуйте позже."
-        r.contains("certificate") -> "Не удалось подтвердить безопасное соединение с сервером."
-        raw.isBlank() -> "Что-то пошло не так. Попробуйте ещё раз."
-        else -> raw
     }
 }
