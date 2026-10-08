@@ -105,6 +105,36 @@ const SIGNATURE_CHANGED_FROM = '1.47';
 $exeNewest = kladovkaNewestByExt('exe');
 $exeLatest = $exeNewest['rel'];
 $exeVersion = $exeLatest !== '' ? $exeNewest['major'] . '.' . $exeNewest['minor'] : '';
+
+// SHA-256 файла сборки — чтобы человек мог сверить, что скачал именно тот
+// APK, который выложен здесь. Считается из файла на диске и кэшируется в
+// APCu: файл 12 МБ, а хешировать его на каждый запрос — расточительство,
+// тем более что сам заголовок страницы меняется раз в сборку.
+//
+// md5, который отдаёт api.php, для этого не годится: он не защищает от
+// подмены файла намеренно составленными коллизиями. Для сверки «тот ли файл»
+// нужен SHA-256.
+$apkSha256 = '';
+if ($apkLatest !== '') {
+    $cacheKey = 'kladovka_sha256_' . md5($apkLatest);
+    $cached = function_exists('apcu_fetch') ? apcu_fetch($cacheKey, $ok) : (($ok = false) ? null : null);
+    if ($ok && is_string($cached) && $cached !== '') {
+        $apkSha256 = $cached;
+    } else {
+        $path = __DIR__ . '/' . basename($apkLatest);
+        if (is_file($path) && is_readable($path)) {
+            $h = @hash_file('sha256', $path);
+            if (is_string($h) && $h !== '') {
+                $apkSha256 = $h;
+                if (function_exists('apcu_store')) {
+                    apcu_store($cacheKey, $h, 3600);
+                }
+            }
+        }
+        // Нет кэша и недоступен файл — показываем пустоту, а не выдуманный хэш:
+        // выдуманный хэш хуже отсутствующего, человек сверит и не сойдётся.
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -113,6 +143,26 @@ $exeVersion = $exeLatest !== '' ? $exeNewest['major'] . '.' . $exeNewest['minor'
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Кладовка — складской учёт на телефоне и в веб-кабинете. Места, стеллажи, контейнеры, вещи, фото и синхронизация на вашем собственном сервере. Android APK, без облаков и подписок.">
 <title>Кладовка — Складской учёт на телефоне</title>
+
+<!-- Превью ссылки. Без этих тегов ссылка на сайт в WhatsApp, Telegram или почте
+     показывалась пустой полосой: ни картинки, ни описания, ни заголовка. Именно
+     этими тегами мессенджеры собирают превью — на самой странице они не видны
+     и на вид не влияют, поэтому о них легко забыть. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Кладовка">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Кладовка — складской учёт на телефоне">
+<meta property="og:description" content="Места, стеллажи, контейнеры, вещи, фото и синхронизация на вашем собственном сервере. Android и Windows, без облаков и подписок.">
+<meta property="og:url" content="https://kladovka.dr6ter.ru/">
+<meta property="og:image" content="https://kladovka.dr6ter.ru/social-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Кладовка — список вещей с категориями и общим итогом">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Кладовка — складской учёт на телефоне">
+<meta name="twitter:description" content="Места, стеллажи, контейнеры, вещи и фото на вашем собственном сервере.">
+<meta name="twitter:image" content="https://kladovka.dr6ter.ru/social-preview.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,6 +240,29 @@ img { max-width: 100%; height: auto; }
 .btn-outline { background: transparent; color: var(--primary); border: 1px solid rgba(0,240,255,.3); }
 .btn-outline:hover { background: rgba(0,240,255,.1); text-decoration: none; }
 .topbar .user-tag { color: var(--muted); font-size: .82rem; white-space: nowrap; }
+
+/* Кнопка меню — только на узких экранах, где само меню уходит в выпадающий
+   список. На широких она не нужна и поэтому скрыта: лишняя кнопка в шапке
+   только занимает место. */
+.nav-toggle {
+  display: none; align-items: center; justify-content: center;
+  width: 40px; height: 36px; margin-left: 10px;
+  background: transparent; border: 1px solid rgba(0,240,255,.3);
+  border-radius: 10px; cursor: pointer; color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-toggle:hover, .nav-toggle:focus-visible { border-color: var(--primary); color: var(--primary); }
+.nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after {
+  display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px;
+}
+.nav-toggle-bars { position: relative; }
+.nav-toggle-bars::before, .nav-toggle-bars::after { content: ''; position: absolute; left: 0; }
+.nav-toggle-bars::before { top: -6px; }
+.nav-toggle-bars::after { top: 6px; }
+/* Открытое состояние — крестик: тот же элемент, без второй картинки. */
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars { background: transparent; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::before { top: 0; transform: rotate(45deg); }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::after { top: 0; transform: rotate(-45deg); }
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -416,9 +489,33 @@ img { max-width: 100%; height: auto; }
   .h-arrow { display: none; }
 }
 
-/* ===== RESPONSIVE: MOBILE (≤ 600px) ===== */
+/* ===== RESPONSIVE: MOBILE (≤ 600px) =====
+   Меню уходит в выпадающий список по кнопке. Раньше оно просто скрывалось
+   (display:none), и на телефоне разделы «Возможности», «Установка»,
+   «Скриншоты», «Права» и «Политика» были недостижимы: оставалась только
+   прокрутка страницы, а ссылка на страницу прав и политику с телефона
+   вообще не открывалась. */
 @media (max-width: 600px) {
   .topbar nav { display: none; }
+  .nav-toggle { display: inline-flex; }
+  .topbar nav.is-open {
+    display: flex; flex-direction: column; align-items: stretch;
+    position: absolute; top: 100%; left: 0; right: 0;
+    gap: 2px; padding: 10px 14px 14px;
+    /* Непрозрачный фон: при rgba(…,0.97) сквозь панель просвечивали
+       заголовок и кнопка первого экрана — меню читалось как сломанное. */
+    background: #070a10;
+    border-bottom: 1px solid rgba(0,240,255,.15);
+    box-shadow: 0 18px 40px rgba(0,0,0,.5);
+  }
+  /* Затемнение страницы под открытым меню. z-index 80 — ниже шапки (90),
+     поэтому сама панель и её пункты остаются поверх затемнения. */
+  body.menu-open::after {
+    content: ''; position: fixed; inset: 0;
+    background: rgba(0,0,0,.55); z-index: 80;
+  }
+  .topbar nav.is-open a { padding: 11px 4px; font-size: .95rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .topbar nav.is-open a:last-child { border-bottom: 0; }
   .topbar { padding: 10px 14px; }
   .topbar .user-tag { display: none; }
   .hero { min-height: auto; padding: 90px 16px 40px; }
@@ -489,12 +586,19 @@ img { max-width: 100%; height: auto; }
 <!-- ===== ШАПКА ===== -->
 <header class="topbar">
   <a class="brand" href="/"><span class="logo">📦</span>Кладовка</a>
-  <nav aria-label="Навигация по сайту">
+  <nav id="site-nav" aria-label="Навигация по сайту">
     <a href="#features">Возможности</a>
     <a href="#install">Установка</a>
     <a href="#screenshots">Скриншоты</a>
+    <!-- Права приложения в меню, а не только ссылкой внутри блока про щиток:
+         человек, который пришёл проверить «а что оно там просит», обычно
+         ищет это в меню, а не читает установку целиком. -->
+    <a href="/apk-permissions.php">Права</a>
     <a href="#privacy">Политика</a>
   </nav>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Открыть меню">
+    <span class="nav-toggle-bars" aria-hidden="true"></span>
+  </button>
   <div class="actions">
     <?php if ($cabAuthed): ?>
       <span class="user-tag">👤 <?= htmlspecialchars($cabUser !== '' ? $cabUser : 'Администратор') ?></span>
@@ -643,9 +747,64 @@ img { max-width: 100%; height: auto; }
     <a href="/download-handler.php" class="btn btn-primary btn-sm">Скачать под мою систему</a>
   </p>
 
-  <!-- Предупреждение о смене подписи. Показывается всегда, а не «пока на
-       сервере лежит старый APK»: версия, которая стоит у человека на телефоне,
-       с наличием файлов на сервере ничего общего не имеет. -->
+  <!-- Щиток Android при установке APK. Показывается, только если на сервере
+       есть сборка для Android: у кого её нет, вопрос неактуален.
+
+       Текст написан по фактам, а не по общему правилу. Проверено на живом
+       телефоне-эмуляторе с включённым Play Protect: APK ставится, Play Protect
+       проверяет и пишет «угроз не найдено», а щиток появляется всё равно —
+       потому что приложение ставится из файла, а не из Google Play. Это
+       политика Android для sideloading, и она одинакова для всех приложений
+       вне Play, независимо от содержимого файла.
+
+       Отдельно показано, как убедиться, что файл именно наш: SHA-256 сверен
+       с тем, что собрано. Для APK по ссылке это единственная проверка,
+       которая что-то значит — антивирус видит скомпилированный код, а хэш
+       однозначно говорит, скачали вы тот файл или подставленный. -->
+  <?php if ($apkLatest !== ''): ?>
+  <div style="max-width:760px; margin:24px auto 0; padding:18px 20px; border-radius:14px;
+              border:1px solid rgba(0,240,255,.25); background:rgba(0,240,255,.05);">
+    <div style="color:#7fe9f5; font-weight:700; margin-bottom:8px;">
+      🛡 Android покажет щиток «Приложение из ненадёжного источника»
+    </div>
+    <p style="margin:0 0 10px; color:var(--muted); font-size:.92rem; line-height:1.55;">
+      Это не означает, что файл найден как вредоносный. Play Protect
+      <strong style="color:var(--ink);">проверил</strong> приложение и угроз не
+      нашёл — и всё равно предупредил, потому что APK поставлен из файла, а не
+      из Google Play. Так Android предупреждает о любом приложении вне
+      Google Play, независимо от того, что внутри: это политика, а не реакция
+      на содержимое.
+    </p>
+    <p style="margin:0 0 8px; color:var(--ink); font-weight:600; font-size:.94rem;">
+      Как поставить
+    </p>
+    <ol style="margin:0 0 14px; padding-left:20px; color:var(--muted); font-size:.92rem; line-height:1.7;">
+      <li>Нажмите «Установить всё равно», либо «Подробнее» → «Установить всё равно».</li>
+      <li>Если спросят «Разрешить установку из этого источника?» — разрешите: это браузер, а не угроза.</li>
+      <li>Дождитесь проверки Play Protect. Она пишет «угроз не найдено» — установка продолжится.</li>
+    </ol>
+    <p style="margin:0 0 8px; color:var(--ink); font-weight:600; font-size:.94rem;">
+      Как убедиться, что файл наш
+    </p>
+    <p style="margin:0 0 8px; color:var(--muted); font-size:.92rem; line-height:1.55;">
+      Скачанный файл можно сверить по хэшу — если совпал, это ровно тот APK,
+      который собран и выложен здесь, а не что-то подставленное по дороге.
+      Загрузите файл на любом сайте, умеющем считать хэш, и сравните:
+    </p>
+    <div style="background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.08); border-radius:10px;
+                padding:12px 14px; margin:0 0 12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                font-size:.82rem; color:#bfe9f2; word-break:break-all; line-height:1.5;">
+      SHA-256 · Kladovka-v<?= htmlspecialchars($apkVersion !== '' ? $apkVersion : '', ENT_QUOTES, 'UTF-8') ?>.apk<br>
+      <?= htmlspecialchars($apkSha256 ?? '', ENT_QUOTES, 'UTF-8') ?>
+    </div>
+    <p style="margin:0; color:var(--muted); font-size:.88rem; line-height:1.55;">
+      Что в файле проверено: <code>Get-AuthenticodeSignature</code> на сборке Windows
+      даёт <code>Valid</code>, Microsoft Defender на APK находит ноль угроз, а
+      запрашиваемые права — только интернет и геолокация. Прочитать их можно
+      на <a href="/apk-permissions.php" style="color:var(--primary);">странице прав</a>.
+    </p>
+  </div>
+  <?php endif; ?>
   <div style="max-width:760px; margin:24px auto 0; padding:18px 20px; border-radius:14px;
               border:1px solid rgba(251,191,36,.35); background:rgba(251,191,36,.07);">
     <div style="color:var(--amber); font-weight:700; margin-bottom:8px;">
@@ -866,6 +1025,47 @@ function closeModal() {
 }
 modal.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+/* Мобильное меню.
+   Открытое состояние держится на классе .is-open и на aria-expanded — чтобы
+   состояние читалось и стилями, и скринридером. Закрывается по Escape, по
+   клику вне и по переходу на ширину, где меню снова обычная строка: иначе на
+   планшете после поворота осталась бы раскрытая панель, которой не видно. */
+(function() {
+  var btn = document.querySelector('.nav-toggle');
+  var nav = document.getElementById('site-nav');
+  if (!btn || !nav) return;
+
+  function setOpen(on) {
+    nav.classList.toggle('is-open', on);
+    // Класс на body включает затемнение страницы под меню (body.menu-open::after).
+    document.body.classList.toggle('menu-open', on);
+    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    btn.setAttribute('aria-label', on ? 'Закрыть меню' : 'Открыть меню');
+  }
+  function isOpen() { return nav.classList.contains('is-open'); }
+
+  btn.addEventListener('click', function() { setOpen(!isOpen()); });
+  // Клик по пункту: переход к разделу, но панель остаётся висеть поверх
+  // страницы, если её не закрыть — поэтому закрываем сразу.
+  nav.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') setOpen(false);
+  });
+  document.addEventListener('click', function(e) {
+    if (isOpen() && !nav.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); btn.focus(); }
+  });
+  // Возврат к широкой раскладке: медиазапрос уже показывает обычное меню,
+  // а класс .is-open на элементе остался бы висеть зря.
+  if ('matchMedia' in window) {
+    var wide = window.matchMedia('(min-width: 601px)');
+    var onChange = function(e) { if (e.matches) setOpen(false); };
+    if (wide.addEventListener) wide.addEventListener('change', onChange);
+    else if (wide.addListener) wide.addListener(onChange);
+  }
+})();
 
 /* Reveal — IntersectionObserver */
 (function() {

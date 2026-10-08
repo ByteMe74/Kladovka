@@ -143,5 +143,27 @@ else
 fi
 
 echo "backup ok $TS: items=$ROWS photos=$PHOTO_COUNT" >> "$LOG"
+
+# Права на кроновые скрипты. Этот скрипт — единственный, кто точно запускается
+# каждый день, поэтому дешевле всего чинить права здесь.
+#
+# Случай был настоящий: у /www/backup/check-kladovka.sh слетел бит исполнения
+# (скрипт выложили через scp обычным файлом). Крон при этом НЕ ругается — он
+# молча пропускает запуск, ошибка уходит в почту root, а почты на машине нет.
+# Итог: два дня подряд монитор не работал, а последняя строка его лога
+# продолжала говорить «OK» — выглядело как штатная работа.
+#
+# Поэтому здесь права не только чинятся, но и починка записывается в лог:
+# по логу видно, что скрипт кто-то трогал.
+for CRON_SCRIPT in /www/backup/check-kladovka.sh /www/backup/backup-kladovka.sh; do
+    if [ -f "$CRON_SCRIPT" ]; then
+        BEFORE=$(stat -c '%a' "$CRON_SCRIPT")
+        if [ "$BEFORE" != "700" ]; then
+            chmod 700 "$CRON_SCRIPT"
+            echo "fixed exec bits: $CRON_SCRIPT was $BEFORE, now 700" >> "$LOG"
+        fi
+    fi
+done
+
 # Последняя строка — в stdout, её видно и при ручном запуске, и в логе cron.
 echo "backup ok: items=$ROWS photos=$PHOTO_COUNT db=$(basename "$GZ")"
